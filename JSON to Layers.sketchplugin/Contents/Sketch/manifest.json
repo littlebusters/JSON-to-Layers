@@ -1,0 +1,23 @@
+{
+	"author": "littlebusters",
+	"menu" : {
+		"isRoot" : false,
+		"shortcut" : "",
+		"items" : [
+			"json-to-layers"
+		],
+		"title" : "JSON to Layers"
+	},
+	"identifier": "net.creative-tweet.json-to-layers",
+	"version": "0.0.1",
+	"description" : "Generate Layers from JSON.",
+	"name" : "JSON to Layers",
+	"commands" : [
+		{
+			"name": "JSON to Layers",
+			"identifier": "json-to-layers",
+			"handler" : "main",
+			"script": "json-to-layers.sketchscript"
+		}
+	]
+}

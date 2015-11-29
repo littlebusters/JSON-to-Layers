@@ -1,0 +1,25 @@
+// @import 'net.creative-tweet.library.js'
+
+function main( context ) {
+	var doc = context.document;
+
+	var userJSON = [doc askForUserInput:"Paste your JSON here:" initialValue:""];
+	var json = userJSON;
+	// var fwJSON = JSON.parse( json );
+	// var fwJSON = eval( json );
+	var fwJSON = (new Function("return " + json))();
+
+	log( fwJSON.documentMeta.docName );
+
+}
+
+function createLayer() {
+	var artboard = MSArtboardGroup.new();
+	doc.addLayer( artboard );
+	artboard.name = page.name;
+	artboard.frame().x = page.x;
+	artboard.frame().y = page.y;
+	artboard.frame().width  = page.width;
+	artboard.frame().height = page.height;
+	log( 'Finished' );
+}
