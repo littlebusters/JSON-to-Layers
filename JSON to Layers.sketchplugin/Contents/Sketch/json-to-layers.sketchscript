@@ -23,3 +23,18 @@ function createLayer() {
 	artboard.frame().height = page.height;
 	log( 'Finished' );
 }
+
+function setFlatFill() {
+	var doc = context.document;
+
+	var rectangle = doc.currentPage().addLayerOfType( 'rectangle' );
+	rectangle.setName( 'test rectangle' );
+	rectangle.frame().x = 0;
+	rectangle.frame().y = 0;
+	rectangle.frame().width = 100;
+	rectangle.frame().height = 100;
+
+	var shepeFill = rectangle.style().fills().addNewStylePart();
+	shepeFill.color = MSColor.colorWithSVGString( 'ff0000' );
+
+}
