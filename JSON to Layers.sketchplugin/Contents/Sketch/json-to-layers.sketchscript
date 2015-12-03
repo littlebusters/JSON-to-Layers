@@ -38,3 +38,43 @@ function setFlatFill() {
 	shepeFill.color = MSColor.colorWithSVGString( 'ff0000' );
 
 }
+
+function setGradientFill() {
+	var doc = context.document;
+// addStopAtLength
+	var rectangle = doc.currentPage().addLayerOfType( 'rectangle' );
+	rectangle.setName( 'test rectangle' );
+	rectangle.frame().x = 0;
+	rectangle.frame().y = 0;
+	rectangle.frame().width = 100;
+	rectangle.frame().height = 100;
+
+	var shapeStyle = rectangle.style();
+	shapeStyle.fills().addNewStylePart();
+	var shapeFill = shapeStyle.fill();
+	shapeFill.setFillType( 1 );
+
+	var gradient = shapeFill.gradient();
+
+	// linear
+	gradient.setGradientType( 0 );
+
+	// radial
+	gradient.setGradientType( 1 );
+
+	// angular
+	gradient.setGradientType( 1 );
+
+	gradient.setColor_atIndex_( MSColor.colorWithSVGString( '#000000' ), 0 );
+
+	// move gradient stop
+	gradient.setPoint_atIndex_( CGPointMake(0, 0), 0 );
+
+	// set alpha
+	var gradientColor = MSColor.colorWithSVGString("#FF0000");
+	gradientColor.alpha = 0.5;
+	gradient.setColor_atIndex_( gradientColor, 1 );
+	
+	// add gradient stop
+	gradient.addStopAtLength( 0.75 );
+}
