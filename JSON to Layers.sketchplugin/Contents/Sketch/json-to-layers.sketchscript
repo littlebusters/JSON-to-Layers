@@ -1,16 +1,52 @@
 // @import 'net.creative-tweet.library.js'
 
-function main( context ) {
+var onRun = function ( context ) {
 	var doc = context.document;
+	var currentPage = doc.currentPage();
 
 	var userJSON = [doc askForUserInput:"Paste your JSON here:" initialValue:""];
+	if ( !userJSON ) return false;
 	var json = userJSON;
-	// var fwJSON = JSON.parse( json );
-	// var fwJSON = eval( json );
-	var fwJSON = (new Function("return " + json))();
+	var fwJSON = ( new Function( 'return ' + json ) )();
 
-	log( fwJSON.documentMeta.docName );
+	var artboardPosition = 0; 
+	for ( var i = 0; i < fwJSON.pages.length; i++ ) {
+		var artboard = MSArtboardGroup.new();
+		artboard.setName( fwJSON.pages[i].pageName );
+		artboard.frame().setX( artboardPosition );
+		artboard.frame().setY( 0 );
+		artboard.frame().setWidth( fwJSON.pages[i].width );
+		artboard.frame().setHeight( fwJSON.pages[i].height );
+		// doc.addLayer( artboard );
+		currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
 
+		addGuideline( artboard, fwJSON.pages[i].guides );
+		log( fwJSON.pages[i].width );
+
+		artboardPosition += fwJSON.pages[i].width + 100;
+	}
+
+}
+
+function addGuideline ( artboard, guides ) {
+	var vRuler = artboard.verticalRulerData();
+	var hRuler = artboard.horizontalRulerData();
+	for ( var i in guides.x ) {
+		vRuler.addGuideWithValue( guides.x[i] );
+	}
+	for ( var i in guides.x ) {
+		hRuler.addGuideWithValue( guides.x[i] );
+	}
+}
+
+function createArtboard ( _attrs ) {
+	var artboard = MSArtboardGroup.new();
+	doc.addLayer( artboard );
+	artboard.name = page.name;
+	artboard.frame().x = page.x;
+	artboard.frame().y = page.y;
+	artboard.frame().width  = page.width;
+	artboard.frame().height = page.height;
 }
 
 function createLayer() {
