@@ -1,7 +1,7 @@
 {
 	"author": "littlebusters",
 	"menu" : {
-		"isRoot" : false,
+		"isRoot" : true,
 		"shortcut" : "",
 		"items" : [
 			"json-to-layers"
@@ -16,7 +16,8 @@
 		{
 			"name": "JSON to Layers",
 			"identifier": "json-to-layers",
-			"handler" : "main",
+			"handler" : "onRun",
+			"shortcut" : "shift control 2",
 			"script": "json-to-layers.sketchscript"
 		}
 	]
