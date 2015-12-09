@@ -21,7 +21,7 @@ var onRun = function ( context ) {
 		currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
 
 		addGuideline( artboard, fwJSON.pages[i].guides );
-		log( fwJSON.pages[i].width );
+		// log( fwJSON.pages[i].width );
 
 		artboardPosition += fwJSON.pages[i].width + 100;
 	}
@@ -34,8 +34,8 @@ function addGuideline ( artboard, guides ) {
 	for ( var i in guides.x ) {
 		vRuler.addGuideWithValue( guides.x[i] );
 	}
-	for ( var i in guides.x ) {
-		hRuler.addGuideWithValue( guides.x[i] );
+	for ( var i in guides.y ) {
+		hRuler.addGuideWithValue( guides.y[i] );
 	}
 }
 
