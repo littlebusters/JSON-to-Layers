@@ -19,10 +19,11 @@ var onRun = function ( context ) {
 		artboard.frame().setHeight( fwJSON.pages[i].height );
 		// doc.addLayer( artboard );
 		currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
+		var artboards = doc.currentPage().artboards();
 
-		setGrid( artboard, fwJSON.documentSetting.grid );
-		addGuideline( artboard, fwJSON.pages[i].guides );
-		createLayers( artboard, fwJSON.pages[i].layers );
+		setGrid( artboards[i], fwJSON.documentSetting.grid );
+		addGuideline( artboards[i], fwJSON.pages[i].guides );
+		createLayers( artboards[i], fwJSON.pages[i].layers );
 		// log( fwJSON.pages[i].width );
 
 		artboardPosition += fwJSON.pages[i].width + 100;
@@ -36,8 +37,16 @@ function createLayers( artboard, layers ) {
 
 function createElements( artboard, elems ) {
 	for (var i = elems.length - 1; i >= 0; i--) {
-		if ( 'path' == elems[i].type ) {
+		log( 'Proccessing...: ' + elems[i].name );
+		var elemsType = elems[i].type;
+		if ( 'rectangle' == elemsType ) {
+			var shape = createRectangle( artboard, elems[i] );
+			shape.setName( elems[i].name );
+			// artboard.addLayers( [shape] );
+		}
+		if ( 'path' == elemsType ) {
 			var shape = addBezier( artboard, elems[i].bezierPath[0] );
+			shape.setName( elems[i].name );
 			artboard.addLayers( [shape] );
 			if ( null != elems[i].border ) {
 				addBorder( shape, elems[i].border );
@@ -50,7 +59,6 @@ function addBorder( shape, attrs ) {
 	var border = shape.style().borders().addNewStylePart();
 	var color = MSColor.colorWithSVGString( attrs.color );
 	color.alpha = attrs.opacity;
-	log( 'Border Color: ' +  attrs.opacity + ' / ' + attrs.opacity / 2 );
 	border.color = color;
 	border.thickness = attrs.thickness;
 	switch ( attrs.position ) {
@@ -70,6 +78,34 @@ function addBorder( shape, attrs ) {
 
 	// edge
 	// dash
+}
+
+function createRectangle( artboard, attrs ) {
+	// var rectangle = doc.currentPage().addLayerOfType( 'rectangle' );
+	// var rectangle = MSRectangleShape.alloc().init();
+	var rectangle = artboard.addLayerOfType( 'rectangle' );
+
+	rectangle.frame().x = attrs.left;
+	rectangle.frame().y = attrs.top;
+	rectangle.frame().width = attrs.width;
+	rectangle.frame().height = attrs.height;
+
+	// var container = MSShapeGroup.alloc().init();
+
+	// container.addLayers( [rectangle] );
+	log( attrs.fill );
+
+
+	if ( null != attrs.fill ) {
+		var shepeFill = rectangle.style().fills().addNewStylePart();
+		log( shepeFill );
+		shepeFill.color = MSColor.colorWithSVGString( getHexColor( attrs.fill.fillColor ) );
+	}
+
+	// artboard.addLayers( [container] );
+
+
+	return rectangle;
 }
 
 function addBezier( artboard, attrs ) {
@@ -117,6 +153,11 @@ function addGuideline ( artboard, guides ) {
 	for ( var i in guides.y ) {
 		hRuler.addGuideWithValue( guides.y[i] );
 	}
+}
+
+function getHexColor( color ) {
+	if( 7 == color.length ) return color;
+	return color.slice( 0, 7 );
 }
 
 function createArtboard ( _attrs ) {
