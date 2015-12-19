@@ -91,7 +91,10 @@ function createRectangle( artboard, attrs ) {
 	if ( null != attrs.fill ) {
 		var shepeFill = rectangle.style().fills().addNewStylePart();
 		log( shepeFill );
-		shepeFill.color = MSColor.colorWithSVGString( getHexColor( attrs.fill.fillColor ) );
+		var color = MSColor.colorWithSVGString( getHexColor( attrs.fill.fillColor ) );
+		color.alpha = getOpacity( attrs.fill.fillColor );
+		shepeFill.color = color;
+
 	}
 
 	return rectangle;
@@ -147,6 +150,18 @@ function addGuideline ( artboard, guides ) {
 function getHexColor( color ) {
 	if( 7 == color.length ) return color;
 	return color.slice( 0, 7 );
+}
+
+function getOpacity( color ) {
+	if( 7 == color.length ) return 1;
+
+	var digit = Math.pow( 10, 2 );
+	var hex = color.slice( 7, 9 );
+	var opacity = parseInt( '0x' + hex ).toString( 10 ) / 255;
+	opacity = Math.floor( opacity * digit );
+	opacity = opacity / digit;
+
+	return opacity;
 }
 
 function createArtboard ( _attrs ) {
