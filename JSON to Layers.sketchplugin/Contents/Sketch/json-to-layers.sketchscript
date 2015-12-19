@@ -81,8 +81,6 @@ function addBorder( shape, attrs ) {
 }
 
 function createRectangle( artboard, attrs ) {
-	// var rectangle = doc.currentPage().addLayerOfType( 'rectangle' );
-	// var rectangle = MSRectangleShape.alloc().init();
 	var rectangle = artboard.addLayerOfType( 'rectangle' );
 
 	rectangle.frame().x = attrs.left;
@@ -90,20 +88,11 @@ function createRectangle( artboard, attrs ) {
 	rectangle.frame().width = attrs.width;
 	rectangle.frame().height = attrs.height;
 
-	// var container = MSShapeGroup.alloc().init();
-
-	// container.addLayers( [rectangle] );
-	log( attrs.fill );
-
-
 	if ( null != attrs.fill ) {
 		var shepeFill = rectangle.style().fills().addNewStylePart();
 		log( shepeFill );
 		shepeFill.color = MSColor.colorWithSVGString( getHexColor( attrs.fill.fillColor ) );
 	}
-
-	// artboard.addLayers( [container] );
-
 
 	return rectangle;
 }
