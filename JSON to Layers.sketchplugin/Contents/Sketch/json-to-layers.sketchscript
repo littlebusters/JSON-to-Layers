@@ -43,6 +43,41 @@ function createElements( artboard, elems ) {
 	};
 }
 
+function addBezier( artboard, attrs ) {
+	var bezierLine = NSBezierPath.bezierPath();
+	var nodes = attrs.nodes;
+	bezierLine.moveToPoint( NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) );
+
+	for ( var i = 1; i < nodes.length; i++ ) {
+		var ancher        = NSMakePoint( nodes[i].ancherPointX, nodes[i].ancherPointY );
+		var currentHandle = NSMakePoint( nodes[i].predPointX,   nodes[i].predPointY );
+		var prevHandle    = NSMakePoint( nodes[i - 1].succPointX, nodes[i - 1].succPointY );
+		// log( 'ancher:        ' + ancher );
+		// log( 'currentHandle: ' + currentHandle );
+		// log( 'prevHandle:    ' + prevHandle );
+		[bezierLine curveToPoint:ancher controlPoint1:prevHandle controlPoint2:currentHandle];
+	};
+	if ( attrs.isClosed ) {
+		[bezierLine 
+			curveToPoint:NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) 
+			controlPoint1:NSMakePoint( nodes[nodes.length - 1].succPointX, nodes[nodes.length - 1].succPointY )
+			controlPoint2:NSMakePoint( nodes[0].predPointX, nodes[0].predPointY )
+		];
+		bezierLine.closePath();
+		// log( 'closed-ancher:        ' + NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) );
+		// log( 'closed-currentHandle: ' + NSMakePoint( nodes[nodes.length - 1].succPointX, nodes[nodes.length - 1].succPointY ) );
+		// log( 'closed-prevHandle:    ' + NSMakePoint( nodes[0].predPointX, nodes[0].predPointY ) );
+	}
+
+
+	var shape = MSShapeGroup.shapeWithBezierPath( bezierLine );
+	var border = shape.style().borders().addNewStylePart();
+	border.color = MSColor.colorWithSVGString("#dd0000");
+	border.thickness = 2;
+
+	return shape;
+}
+
 function setGrid( artboard, gridAttrs ) {
 	log( artboard.class() );
 	// artboard.setRulerBase( { x: gridAttrs.gridOrigin.x, y: gridAttrs.gridOrigin.y} );
