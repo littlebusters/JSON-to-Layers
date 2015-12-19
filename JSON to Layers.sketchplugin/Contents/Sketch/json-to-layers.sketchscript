@@ -22,11 +22,16 @@ var onRun = function ( context ) {
 
 		setGrid( artboard, fwJSON.documentSetting.grid );
 		addGuideline( artboard, fwJSON.pages[i].guides );
+		createLayers( artboard, fwJSON.pages[i].layers );
 		// log( fwJSON.pages[i].width );
 
 		artboardPosition += fwJSON.pages[i].width + 100;
 	}
 
+}
+
+function createLayers( artboard, layers ) {
+	createElements( artboard, layers[0].elems );
 }
 
 function setGrid( artboard, gridAttrs ) {
