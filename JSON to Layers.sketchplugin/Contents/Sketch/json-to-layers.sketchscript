@@ -39,8 +39,37 @@ function createElements( artboard, elems ) {
 		if ( 'path' == elems[i].type ) {
 			var shape = addBezier( artboard, elems[i].bezierPath[0] );
 			artboard.addLayers( [shape] );
+			if ( null != elems[i].border ) {
+				addBorder( shape, elems[i].border );
+			}
 		}
 	};
+}
+
+function addBorder( shape, attrs ) {
+	var border = shape.style().borders().addNewStylePart();
+	var color = MSColor.colorWithSVGString( attrs.color );
+	color.alpha = attrs.opacity;
+	log( 'Border Color: ' +  attrs.opacity + ' / ' + attrs.opacity / 2 );
+	border.color = color;
+	border.thickness = attrs.thickness;
+	switch ( attrs.position ) {
+		case 'center':
+			border.setPosition( 0 );
+			break; 
+		case 'inside':
+			border.setPosition( 1 );
+			break; 
+		case 'outside':
+			border.setPosition( 2 );
+			break; 
+		default:
+			border.setPosition( 0 );
+			break; 
+	}
+
+	// edge
+	// dash
 }
 
 function addBezier( artboard, attrs ) {
@@ -69,11 +98,7 @@ function addBezier( artboard, attrs ) {
 		// log( 'closed-prevHandle:    ' + NSMakePoint( nodes[0].predPointX, nodes[0].predPointY ) );
 	}
 
-
 	var shape = MSShapeGroup.shapeWithBezierPath( bezierLine );
-	var border = shape.style().borders().addNewStylePart();
-	border.color = MSColor.colorWithSVGString("#dd0000");
-	border.thickness = 2;
 
 	return shape;
 }
