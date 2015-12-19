@@ -17,7 +17,7 @@
 			"name": "JSON to Layers",
 			"identifier": "json-to-layers",
 			"handler" : "onRun",
-			"shortcut" : "shift control 2",
+			"shortcut" : "shift control command 2",
 			"script": "json-to-layers.sketchscript"
 		}
 	]
