@@ -28,6 +28,11 @@ var onRun = function ( context ) {
 
 }
 
+function setGrid( artboard, gridAttrs ) {
+	log( artboard.class() );
+	// artboard.setRulerBase( { x: gridAttrs.gridOrigin.x, y: gridAttrs.gridOrigin.y} );
+}
+
 function addGuideline ( artboard, guides ) {
 	var vRuler = artboard.verticalRulerData();
 	var hRuler = artboard.horizontalRulerData();
