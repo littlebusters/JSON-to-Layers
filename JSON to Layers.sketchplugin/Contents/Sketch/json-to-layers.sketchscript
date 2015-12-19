@@ -20,6 +20,7 @@ var onRun = function ( context ) {
 		// doc.addLayer( artboard );
 		currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
 
+		setGrid( artboard, fwJSON.documentSetting.grid );
 		addGuideline( artboard, fwJSON.pages[i].guides );
 		// log( fwJSON.pages[i].width );
 
