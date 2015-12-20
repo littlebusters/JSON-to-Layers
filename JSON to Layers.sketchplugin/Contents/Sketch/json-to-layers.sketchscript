@@ -39,6 +39,10 @@ function createElements( artboard, elems ) {
 	for (var i = elems.length - 1; i >= 0; i--) {
 		log( '-> Proccessing: ' + elems[i].name );
 		var elemsType = elems[i].type;
+		if ( 'text' == elemsType ) {
+			var shape = createText( artboard, elems[i] );
+			shape.setName( elems[i].name );
+		}
 		if ( 'rectangle' == elemsType ) {
 			var shape = createRectangle( artboard, elems[i] );
 			shape.setName( elems[i].name );
@@ -93,6 +97,46 @@ function addBorder( shape, attrs ) {
 
 	// edge
 	// dash
+}
+
+function createText( artboard, attrs ) {
+	var text = artboard.addLayerOfType( 'text' );
+	text = setFrame( text, attrs );
+
+	var textPart = [0];
+	for ( var i = 0; i < attrs.text.textRuns.length; i++ ) {
+		text.stringValue = attrs.text.textRuns[i].charactors;
+		textPart.push( textPart[i] + attrs.text.textRuns[i].charactors.length );
+	}
+	text.fontSize           = attrs.text.fontSize;
+	text.textColor          = MSColor.colorWithSVGString( attrs.text.fillColor );
+	text.lineSpacing        = attrs.text.leading;
+	text.fontPostscriptName = attrs.text.fontFace;
+	switch ( attrs.text.alignment ) {
+		case 'left':
+			text.setTextAlignment( 0 );
+			break;
+		case 'right':
+			text.setTextAlignment( 1 );
+			break;
+		case 'center':
+			text.setTextAlignment( 2 );
+			break;
+		default:
+			text.setTextAlignment( 0 );
+			break;
+	}
+	
+	return text;
+}
+
+function setFrame( targetLayer, attrs ) {
+	targetLayer.frame().x = attrs.left;
+	targetLayer.frame().y = attrs.top;
+	targetLayer.frame().width = attrs.width;
+	targetLayer.frame().height = attrs.height;
+
+	return targetLayer;
 }
 
 function createRectangle( artboard, attrs ) {
