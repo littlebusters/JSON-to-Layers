@@ -60,12 +60,13 @@ function createElements( artboard, elems ) {
 
 function addFill( shape, attrs ) {
 	var fill = shape.style().fills().addNewStylePart();
-	var color = MSColor.colorWithSVGString( getHexColor( attrs.fillColor ) );
-	color.alpha = getOpacity( attrs.fillColor );
-	fill.color = color;
 	
 	if( null != attrs.gradient ) {
 		addGradientFill( shape, attrs.gradient );
+	} else {
+		var color = MSColor.colorWithSVGString( getHexColor( attrs.fillColor ) );
+		color.alpha = getOpacity( attrs.fillColor );
+		fill.color = color;
 	}
 }
 
@@ -207,7 +208,7 @@ function setFlatFill() {
 
 function addGradientFill( shape, attrs ) {
 	var shapeStyle = shape.style();
-	shapeStyle.fills().addNewStylePart();
+	// shapeStyle.fills().addNewStylePart();
 	var shapeFill = shapeStyle.fill();
 	shapeFill.setFillType( 1 ); // gradient fill
 
