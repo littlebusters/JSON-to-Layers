@@ -50,11 +50,17 @@ function createElements( artboard, elems ) {
 			if ( null != elems[i].fill ) {
 				addFill( shape, elems[i].fill );
 			}
+			if ( null != elems[i].border ) {
+				addBorder( shape, elems[i].border );
+			}
 		}
 		if ( 'path' == elemsType ) {
 			var shape = addBezier( artboard, elems[i].bezierPath[0] );
 			shape.setName( elems[i].name );
 			artboard.addLayers( [shape] );
+			if ( null != elems[i].fill ) {
+				addFill( shape, elems[i].fill );
+			}
 			if ( null != elems[i].border ) {
 				addBorder( shape, elems[i].border );
 			}
@@ -104,14 +110,29 @@ function createText( artboard, attrs ) {
 	text = setFrame( text, attrs );
 
 	var textPart = [0];
-	for ( var i = 0; i < attrs.text.textRuns.length; i++ ) {
-		text.stringValue = attrs.text.textRuns[i].charactors;
+	var textPartNum = attrs.text.textRuns.length;
+	text.stringValue = '';
+	for ( var i = 0; i < textPartNum; i++ ) {
+		text.stringValue = text.stringValue() + attrs.text.textRuns[i].charactors;
 		textPart.push( textPart[i] + attrs.text.textRuns[i].charactors.length );
 	}
-	text.fontSize           = attrs.text.fontSize;
-	text.textColor          = MSColor.colorWithSVGString( attrs.text.fillColor );
-	text.lineSpacing        = attrs.text.leading;
-	text.fontPostscriptName = attrs.text.fontFace;
+
+	if ( 1 < textPartNum ) {
+		for ( var i = 0; i < textPartNum; i++ ) {
+			var range = NSMakeRange( textPart[i], textPart[i + 1] - textPart[i] );
+			var textFont = NSFont.fontWithName_size_( attrs.text.textRuns[i].face, attrs.text.textRuns[i].size );
+
+			text.setIsEditingText( true );
+			text.addAttribute_value_forRange( NSFontAttributeName, textFont, range );
+			text.setIsEditingText( false );
+		}
+	} else {
+		text.fontSize           = attrs.text.fontSize;
+		text.lineSpacing        = attrs.text.leading;
+		text.fontPostscriptName = attrs.text.fontFace;
+		text.textColor          = MSColor.colorWithSVGString( attrs.text.fillColor );
+	}
+	
 	switch ( attrs.text.alignment ) {
 		case 'left':
 			text.setTextAlignment( 0 );
