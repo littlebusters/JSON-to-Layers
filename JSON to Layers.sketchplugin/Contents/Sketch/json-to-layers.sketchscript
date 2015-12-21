@@ -32,7 +32,10 @@ var onRun = function ( context ) {
 }
 
 function createLayers( artboard, layers ) {
-	createElements( artboard, layers[0].elems );
+	for ( var i = 0; i < layers.length; i++ ) {
+		log( 'Layer: ' + layers[i].layerName );
+		createElements( artboard, layers[i].elems );
+	}
 }
 
 function createElements( artboard, elems ) {
@@ -64,6 +67,10 @@ function createElements( artboard, elems ) {
 			if ( null != elems[i].border ) {
 				addBorder( shape, elems[i].border );
 			}
+		}
+		if ( 'slice' == elemsType ) {
+			var shape = createSlice( artboard, elems[i] );
+			// shape.setName( elems[i].name );
 		}
 	};
 }
@@ -169,6 +176,14 @@ function createRectangle( artboard, attrs ) {
 	rectangle.frame().height = attrs.height;
 
 	return rectangle;
+}
+
+function createSlice( artboard, attrs ) {
+	var slice = MSSliceLayer.new();
+	slice = setFrame( slice, attrs );
+	slice.setName( attrs.name );
+
+	artboard.addSlice( slice );
 }
 
 function addBezier( artboard, attrs ) {
