@@ -32,9 +32,16 @@ var onRun = function ( context ) {
 }
 
 function createLayers( artboard, layers ) {
+	var layerGroups = [];
 	for ( var i = 0; i < layers.length; i++ ) {
 		log( 'Layer: ' + layers[i].layerName );
-		createElements( artboard, layers[i].elems );
+		if ( 0 > layers[i].parentLayerNum ) {
+			var parent = artboard;
+		} else {
+			var parent = layerGroups[layers[i].parentLayerNum];
+		}
+		layerGroups[i] = createGroup( parent, layers[i] );
+		createElements( layerGroups[i], layers[i].elems );
 	}
 }
 
@@ -110,6 +117,16 @@ function addBorder( shape, attrs ) {
 
 	// edge
 	// dash
+}
+
+function createGroup( parent, attrs ) {
+	var group = parent.addLayerOfType( 'group' );
+	group.setName( attrs.layerName );
+	// layerName:"Layer 2", 
+	//						parentLayerNum:0, elems:[
+	// var layers = currentPage.layers();
+	// log( layers.objectAtIndex(1).name() );
+	return group;
 }
 
 function createText( artboard, attrs ) {
