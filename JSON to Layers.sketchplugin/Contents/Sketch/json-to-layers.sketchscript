@@ -1,12 +1,14 @@
 // @import 'net.creative-tweet.library.js'
 
 var onRun = function ( context ) {
+	log( '------------------------------------------------------------' );
 	var doc = context.document;
 	var currentPage = doc.currentPage();
 
 	var userJSON = [doc askForUserInput:"Paste your JSON here:" initialValue:""];
 	if ( !userJSON ) return false;
 	var json = userJSON;
+	// var fwJSON = JSON.parse( json );
 	var fwJSON = ( new Function( 'return ' + json ) )();
 
 	var artboardPosition = 0; 
@@ -42,19 +44,35 @@ function createLayers( artboard, layers ) {
 		}
 		layerGroups[i] = createGroup( parent, layers[i] );
 		createElements( layerGroups[i], layers[i].elems );
+		parent.resizeRoot( true );
 	}
 }
 
-function createElements( artboard, elems ) {
+function createElements( parent, elems ) {
+	var shape;
+	var originParent = parent;
 	for (var i = elems.length - 1; i >= 0; i--) {
 		log( '-> Proccessing: ' + elems[i].name );
 		var elemsType = elems[i].type;
 		if ( 'text' == elemsType ) {
-			var shape = createText( artboard, elems[i] );
+			var shape = createText( parent, elems[i] );
 			shape.setName( elems[i].name );
 		}
+		if ( 'bitmap' == elemsType ) {
+			log( 'Type: Bitmap' );
+			if ( null != elems[i].mask ) {
+				log( 'Has Mask' );
+				parent = createMask( parent, elems[i] );
+			}
+			var shape = importBitmap( parent, elems[i] );
+		}
 		if ( 'rectangle' == elemsType ) {
-			var shape = createRectangle( artboard, elems[i] );
+			log( 'Type: Rectangle' );
+			if ( null != elems[i].mask ) {
+				log( 'Has Mask' );
+				parent = createMask( parent, elems[i] );
+			}
+			var shape = createRectangle( parent, elems[i] );
 			shape.setName( elems[i].name );
 			// artboard.addLayers( [shape] );
 			if ( null != elems[i].fill ) {
@@ -65,9 +83,13 @@ function createElements( artboard, elems ) {
 			}
 		}
 		if ( 'path' == elemsType ) {
-			var shape = addBezier( artboard, elems[i].bezierPath[0] );
+			if ( null != elems[i].mask ) {
+				log( 'Has Mask' );
+				parent = createMask( parent, elems[i] );
+			}
+			var shape = addBezier( parent, elems[i].bezierPath[0] );
 			shape.setName( elems[i].name );
-			artboard.addLayers( [shape] );
+			parent.addLayers( [shape] );
 			if ( null != elems[i].fill ) {
 				addFill( shape, elems[i].fill );
 			}
@@ -76,10 +98,14 @@ function createElements( artboard, elems ) {
 			}
 		}
 		if ( 'slice' == elemsType ) {
-			var shape = createSlice( artboard, elems[i] );
+			var shape = createSlice( parent, elems[i] );
 			// shape.setName( elems[i].name );
 		}
+		parent = originParent;
 	};
+	// parent.resizeRoot( true );
+
+	return shape;
 }
 
 function addFill( shape, attrs ) {
@@ -117,6 +143,33 @@ function addBorder( shape, attrs ) {
 
 	// edge
 	// dash
+}
+
+function importBitmap( parent, attrs ) {
+	var filePath = attrs.uri;
+	filePath = filePath.replace( "file:///Macintosh%20HD/", "/" );
+
+	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
+	bitmap.frame().x = attrs.left;
+	bitmap.frame().y = attrs.top;
+	bitmap.name = attrs.name;
+
+	parent.addLayers( [bitmap] );
+
+	return bitmap;
+}
+
+function createMask( parent, attrs ) {
+	log( '/ createMask' );
+	log( attrs );
+	var maskGroup = parent.addLayerOfType( 'group' );
+	maskGroup.setName( attrs.name );
+	var mask = createElements( maskGroup, attrs.mask.element );
+	log( 'Mask Object: ' + mask.frame() );
+	mask.setHasClippingMask( true );
+	mask.resizeRoot( true );
+
+	return maskGroup;
 }
 
 function createGroup( parent, attrs ) {
