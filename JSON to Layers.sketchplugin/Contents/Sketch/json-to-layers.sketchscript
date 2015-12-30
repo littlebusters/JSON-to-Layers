@@ -142,8 +142,30 @@ function addBorder( shape, attrs ) {
 			break; 
 	}
 
-	// edge
-	// dash
+	var borderOptions = shape.style();
+	switch ( attrs.edge ) {
+		case 'square':
+			borderOptions.borderOptions().setLineCapStyle( 0 );
+			borderOptions.borderOptions().setLineJoinStyle( 0 );
+			break; 
+		case 'circle':
+			borderOptions.borderOptions().setLineCapStyle( 1 );
+			borderOptions.borderOptions().setLineJoinStyle( 1 );
+			break; 
+		default:
+			borderOptions.borderOptions().setLineCapStyle( 0 );
+			borderOptions.borderOptions().setLineJoinStyle( 0 );
+			break; 
+	}
+
+	if ( attrs.dash ) {
+		var dashAttrs = [];
+		for ( var i = 0; i < 2; i++ ) {
+			dashAttrs[i * 2] = attrs.dashAttrs[i].dash;
+			dashAttrs[i * 2 + 1] = attrs.dashAttrs[i].gap;
+		}
+		border.borderOptions().setDashPattern( dashAttrs );
+	}
 }
 
 function importBitmap( parent, attrs ) {
