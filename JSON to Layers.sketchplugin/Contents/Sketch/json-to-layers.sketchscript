@@ -48,7 +48,8 @@ function createLayers( artboard, layers ) {
 	}
 }
 
-function createElements( parent, elems ) {
+function createElements( parent, elems, isMask ) {
+	if ( !isMask ) isMask = false;
 	var shape;
 	var originParent = parent;
 	for (var i = elems.length - 1; i >= 0; i--) {
@@ -75,10 +76,10 @@ function createElements( parent, elems ) {
 			var shape = createRectangle( parent, elems[i] );
 			shape.setName( elems[i].name );
 			// artboard.addLayers( [shape] );
-			if ( null != elems[i].fill ) {
+			if ( null != elems[i].fill && !isMask ) {
 				addFill( shape, elems[i].fill );
 			}
-			if ( null != elems[i].border ) {
+			if ( null != elems[i].border && !isMask ) {
 				addBorder( shape, elems[i].border );
 			}
 		}
@@ -90,10 +91,10 @@ function createElements( parent, elems ) {
 			var shape = addBezier( parent, elems[i].bezierPath[0] );
 			shape.setName( elems[i].name );
 			parent.addLayers( [shape] );
-			if ( null != elems[i].fill ) {
+			if ( null != elems[i].fill && !isMask ) {
 				addFill( shape, elems[i].fill );
 			}
-			if ( null != elems[i].border ) {
+			if ( null != elems[i].border && !isMask ) {
 				addBorder( shape, elems[i].border );
 			}
 		}
@@ -164,7 +165,7 @@ function createMask( parent, attrs ) {
 	log( attrs );
 	var maskGroup = parent.addLayerOfType( 'group' );
 	maskGroup.setName( attrs.name );
-	var mask = createElements( maskGroup, attrs.mask.element );
+	var mask = createElements( maskGroup, attrs.mask.element, true );
 	log( 'Mask Object: ' + mask.frame() );
 	mask.setHasClippingMask( true );
 	mask.resizeRoot( true );
