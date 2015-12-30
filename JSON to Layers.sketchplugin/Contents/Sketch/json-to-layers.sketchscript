@@ -390,6 +390,8 @@ function addGradientFill( shape, attrs ) {
 			}
 		};
 	};
+	log( 'gradientNodes' );
+	log( gradientNodes );
 
 	// get gradient attributes
 	var optimazedPoints = [];
@@ -401,7 +403,13 @@ function addGradientFill( shape, attrs ) {
 					optimazedPoints[index].color = gradientNodes[i].color;
 					optimazedPoints[index].position = gradientNodes[i].position;
 					if ( 9 == gradientNodes[j].color.length ) {
-						optimazedPoints[index].opacity = getOpacityByDigit( gradientNodes[j].color.slice( 7, 9 ) );
+						var assets = {prev:{}, next:{}, current:{}};
+						assets.prev.position    = optimazedPoints[index - 1].position;
+						assets.prev.opacity     = optimazedPoints[index - 1].opacity;
+						assets.next.position    = gradientNodes[j].position;
+						assets.next.opacity     = getOpacityByDigit( gradientNodes[j].color.slice( 7, 9 ) );
+						assets.current.position = optimazedPoints[index].position;
+						optimazedPoints[index].opacity = getGradientOpacity( assets );
 					} else {
 						optimazedPoints[index].opacity = 1;
 					}
@@ -424,9 +432,6 @@ function addGradientFill( shape, attrs ) {
 				}
 
 				gradientAssets.current.position = gradientNodes[i].position;
-				if ( 1 == gradientNodes[i].position ) {
-					gradientAssets.current.position = 0.5;
-				}
 
 				optimazedPoints[index] = {};
 				optimazedPoints[index].color = getGradientStopColorOnOpacitySide( gradientAssets );
@@ -468,6 +473,7 @@ function addGradientFill( shape, attrs ) {
 
 // utilities
 function getGradientStopColorOnOpacitySide ( assets ) {
+	log( assets );
 
 	var pr = hex2Digit( assets.prev.color.slice( 1, 3 ) ) - 0;
 	var pg = hex2Digit( assets.prev.color.slice( 3, 5 ) ) - 0;
@@ -481,8 +487,9 @@ function getGradientStopColorOnOpacitySide ( assets ) {
 
 	var range = assets.next.position - assets.prev.position;
 	var offset = 1 / range;
+	log( 'offset:' + offset );
 	var localRangePosition = ( assets.current.position - assets.prev.position ) * offset;
-	log( 'localRangePosition: ' + localRangePosition );
+	log( 'range: ' + range + ' / offset: ' + offset + ' / localRangePosition: ' + localRangePosition );
 	
 	var r = floorWithDigit( pr + ( nr - pr ) * localRangePosition, 0 );
 	var g = floorWithDigit( pg + ( ng - pg ) * localRangePosition, 0 );
@@ -494,6 +501,17 @@ function getGradientStopColorOnOpacitySide ( assets ) {
 	log( 'retrun: ' + '#' + r + g + b );
 
 	return '#' + r + g + b;
+}
+
+function getGradientOpacity ( assets ) {
+
+	var range = assets.next.position - assets.prev.position;
+	var offset = 1 / range;
+	var localRangePosition = ( assets.current.position - assets.prev.position ) * offset;
+
+	var opacity = floorWithDigit( assets.prev.opacity + ( assets.next.opacity - assets.prev.opacity ) * localRangePosition, 2 );
+
+	return opacity;
 }
 
 function floorWithDigit ( _val, _specifiedDigit ) {
