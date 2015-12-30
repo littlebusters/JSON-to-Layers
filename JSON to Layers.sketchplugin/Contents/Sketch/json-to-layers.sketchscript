@@ -378,15 +378,79 @@ function addGradientFill( shape, attrs ) {
 			break;
 	}
 
-	var orignPoint = attrs.gradientStops.length;
+	var gradientNodes = attrs.gradientNodes.nodes.concat( attrs.gradientNodes.opacityNodes );
+
+	// sort gradient stops by position
+	for ( var i = 0; i < gradientNodes.length - 1; i++ ) {
+		for ( var j = gradientNodes.length - 1; j > i; j-- ) {
+			if ( gradientNodes[j - 1].position > gradientNodes[j].position ) {
+				var exchenge = gradientNodes[j - 1];
+				gradientNodes[j - 1] = gradientNodes[j];
+				gradientNodes[j] = exchenge;
+			}
+		};
+	};
+
+	// get gradient attributes
+	var optimazedPoints = [];
+	for ( var i = 0, index = 0; i < gradientNodes.length; i++ ) {
+		for ( var j = i; j < gradientNodes.length; j++ ) {
+			if ( !gradientNodes[i].isOpacityNode ) {
+				if ( gradientNodes[j].isOpacityNode && gradientNodes[i].position <= gradientNodes[j].position ) {
+					optimazedPoints[index] = {};
+					optimazedPoints[index].color = gradientNodes[i].color;
+					optimazedPoints[index].position = gradientNodes[i].position;
+					if ( 9 == gradientNodes[j].color.length ) {
+						optimazedPoints[index].opacity = getOpacityByDigit( gradientNodes[j].color.slice( 7, 9 ) );
+					} else {
+						optimazedPoints[index].opacity = 1;
+					}
+					index++;
+					break;
+				}
+			} else if ( gradientNodes[i - 1].position != gradientNodes[i].position ) {
+				var gradientAssets = {prev:{}, next:{}, current:{}};
+
+				gradientAssets.prev.color    = optimazedPoints[index - 1].color;
+				gradientAssets.prev.position = optimazedPoints[index - 1].position;
+				gradientAssets.next.color    = optimazedPoints[index - 1].color;
+				gradientAssets.next.position = 1;
+
+				for ( var k = j; k < gradientNodes.length; k++ ) {
+					if ( !gradientNodes[k].isOpacityNode ) {
+						gradientAssets.next.color    = gradientNodes[k].color;
+						gradientAssets.next.position = gradientNodes[k].position;
+					} 
+				}
+
+				gradientAssets.current.position = gradientNodes[i].position;
+				if ( 1 == gradientNodes[i].position ) {
+					gradientAssets.current.position = 0.5;
+				}
+
+				optimazedPoints[index] = {};
+				optimazedPoints[index].color = getGradientStopColorOnOpacitySide( gradientAssets );
+				optimazedPoints[index].position = gradientNodes[i].position;
+				if ( 9 == gradientNodes[i].color.length ) {
+					optimazedPoints[index].opacity = getOpacityByDigit( gradientNodes[i].color.slice( 7, 9 ) );
+				} else {
+					optimazedPoints[index].opacity = 1;
+				}
+				index++;
+				break;
+			}
+		}
+	}
+
+	var orignPoint = optimazedPoints.length;
 	for ( var i = 0; i < orignPoint; i++ ) {
-		if ( 0 != attrs.gradientStops[i].position && 1 != attrs.gradientStops[i].position ) {
-			gradient.addStopAtLength( floorWithDigit( attrs.gradientStops[i].position, 2 ) );
+		if ( 0 != optimazedPoints[i].position && 1 != optimazedPoints[i].position ) {
+			gradient.addStopAtLength( floorWithDigit( optimazedPoints[i].position, 2 ) );
 		}
 	}
 	for ( var i = 0; i < orignPoint; i++ ) {
-		var gradientColor = MSColor.colorWithSVGString( attrs.gradientStops[i].color );
-		gradientColor.alpha = attrs.gradientStops[i].opacity;
+		var gradientColor = MSColor.colorWithSVGString( optimazedPoints[i].color );
+		gradientColor.alpha = optimazedPoints[i].opacity;
 		gradient.setColor_atIndex_( gradientColor, i );
 	}
 
@@ -402,9 +466,55 @@ function addGradientFill( shape, attrs ) {
 	gradient.setPoint_atIndex_( CGPointMake( endX, endY ), orignPoint - 1 );
 }
 
+// utilities
+function getGradientStopColorOnOpacitySide ( assets ) {
+
+	var pr = hex2Digit( assets.prev.color.slice( 1, 3 ) ) - 0;
+	var pg = hex2Digit( assets.prev.color.slice( 3, 5 ) ) - 0;
+	var pb = hex2Digit( assets.prev.color.slice( 5, 7 ) ) - 0;
+
+	var nr = hex2Digit( assets.next.color.slice( 1, 3 ) ) - 0;
+	var ng = hex2Digit( assets.next.color.slice( 3, 5 ) ) - 0;
+	var nb = hex2Digit( assets.next.color.slice( 5, 7 ) ) - 0;
+
+	log( 'prevColor: ' + pr + ' / ' + pg + ' / ' + pb + ' | nextColor: ' + nr + ' / ' + ng + ' / ' + nb );
+
+	var range = assets.next.position - assets.prev.position;
+	var offset = 1 / range;
+	var localRangePosition = ( assets.current.position - assets.prev.position ) * offset;
+	log( 'localRangePosition: ' + localRangePosition );
+	
+	var r = floorWithDigit( pr + ( nr - pr ) * localRangePosition, 0 );
+	var g = floorWithDigit( pg + ( ng - pg ) * localRangePosition, 0 );
+	var b = floorWithDigit( pb + ( nb - pb ) * localRangePosition, 0 );
+
+	r = digit2Hex( r );
+	g = digit2Hex( g );
+	b = digit2Hex( b );
+	log( 'retrun: ' + '#' + r + g + b );
+
+	return '#' + r + g + b;
+}
+
 function floorWithDigit ( _val, _specifiedDigit ) {
 	var digit = Math.pow( 10, _specifiedDigit );
 	var val = Math.floor( _val * digit );
 
 	return  val / digit;
+}
+
+function getOpacityByDigit ( _hex ) {
+	var digit = ( parseInt( '0x' + _hex ).toString( 10 ) ) / 255;
+
+	return floorWithDigit( digit, 2 );
+}
+
+function digit2Hex ( _digit ) {
+	var hex = parseInt( _digit ).toString( 16 );
+	if ( 1 == hex.length ) hex = '0' + hex;
+	return hex;
+}
+
+function hex2Digit ( _hex ) {
+	return ( parseInt( '0x' + _hex ).toString( 10 ) );
 }
