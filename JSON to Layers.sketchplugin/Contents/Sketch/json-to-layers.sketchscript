@@ -158,13 +158,14 @@ function addBorder( shape, attrs ) {
 			break; 
 	}
 
-	if ( attrs.dash ) {
+	if ( 1 == attrs.dashType || 2 == attrs.dashType ) {
 		var dashAttrs = [];
-		for ( var i = 0; i < 2; i++ ) {
-			dashAttrs[i * 2] = attrs.dashAttrs[i].dash;
-			dashAttrs[i * 2 + 1] = attrs.dashAttrs[i].gap;
+		var gapOffest = attrs.edge == 'circle' ? attrs.thickness : 0;
+		for ( var i = 0; i < attrs.dashType; i++ ) {
+			dashAttrs[i * 2] = attrs.dashAttr[i].dash;
+			dashAttrs[i * 2 + 1] = attrs.dashAttr[i].gap + gapOffest;
 		}
-		border.borderOptions().setDashPattern( dashAttrs );
+		borderOptions.borderOptions().setDashPattern( dashAttrs );
 	}
 }
 
