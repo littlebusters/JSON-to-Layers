@@ -262,14 +262,19 @@ function setFrame( targetLayer, attrs ) {
 }
 
 function createRectangle( artboard, attrs ) {
-	var rectangle = artboard.addLayerOfType( 'rectangle' );
+	var rectangle = MSRectangleShape.new();;
 
 	rectangle.frame().x = attrs.left;
 	rectangle.frame().y = attrs.top;
 	rectangle.frame().width = attrs.width;
 	rectangle.frame().height = attrs.height;
 
-	return rectangle;
+	var shape = MSShapeGroup.shapeWithPath( rectangle );
+	shape.layers().firstObject().cornerRadiusFloat = attrs.radius;
+	// shape.layers().firstObject().cornerRadiusString = "7/0/0/10";
+	artboard.addLayers( [shape] );
+
+	return shape;
 }
 
 function createSlice( artboard, attrs ) {
