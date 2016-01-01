@@ -112,8 +112,10 @@ function createElements( parent, elems, isMask ) {
 function addFill( shape, attrs ) {
 	var fill = shape.style().fills().addNewStylePart();
 	
-	if( null != attrs.gradient ) {
+	if( 'gradient' == attrs.fillType ) {
 		addGradientFill( shape, attrs.gradient );
+	} else if ( 'pattern' == attrs.fillType ) {
+		addPatternFill( shape, attrs.pattern );
 	} else {
 		var color = MSColor.colorWithSVGString( getHexColor( attrs.fillColor ) );
 		color.alpha = getOpacity( attrs.fillColor );
@@ -383,6 +385,16 @@ function setFlatFill() {
 	var shepeFill = rectangle.style().fills().addNewStylePart();
 	shepeFill.color = MSColor.colorWithSVGString( 'ff0000' );
 
+}
+
+function addPatternFill( shape, attrs ) {
+	var filePath = NSImage.new().initWithContentsOfFile( attrs.replace( "file:///Macintosh%20HD/", "/" ) );
+	var shapeStyle = shape.style();
+	var shapeFill = shapeStyle.fill();
+	
+	var fillCollection = shapeFill.documentData().images();
+	shapeFill.setFillType(4);
+	shapeFill.setPatternImage_collection_( filePath, fillCollection );
 }
 
 function addGradientFill( shape, attrs ) {
