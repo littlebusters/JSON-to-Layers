@@ -1,4 +1,4 @@
-// @import 'net.creative-tweet.library.js'
+@import 'lib/const.js';
 
 var onRun = function ( context ) {
 	log( '------------------------------------------------------------' );
@@ -66,6 +66,7 @@ function createElements( parent, elems, isMask ) {
 				parent = createMask( parent, elems[i] );
 			}
 			var shape = importBitmap( parent, elems[i] );
+			addContextSettings( shape, elems[i] );
 		}
 		if ( 'rectangle' == elemsType ) {
 			log( 'Type: Rectangle' );
@@ -75,6 +76,7 @@ function createElements( parent, elems, isMask ) {
 			}
 			var shape = createRectangle( parent, elems[i] );
 			shape.setName( elems[i].name );
+			addContextSettings( shape, elems[i] );
 			// artboard.addLayers( [shape] );
 			if ( null != elems[i].fill && !isMask ) {
 				addFill( shape, elems[i].fill );
@@ -90,6 +92,7 @@ function createElements( parent, elems, isMask ) {
 			}
 			var shape = addBezier( parent, elems[i].bezierPath );
 			shape.setName( elems[i].name );
+			addContextSettings( shape, elems[i] );
 			parent.addLayers( [shape] );
 			if ( null != elems[i].fill && !isMask ) {
 				addFill( shape, elems[i].fill );
@@ -105,12 +108,14 @@ function createElements( parent, elems, isMask ) {
 		if ( 'layer group' == elemsType ) {
 			log( 'Type: Layer Group' );
 			parent = createGroup( parent, elems[i] );
+			addContextSettings( parent, elems[i] );
 			createElements( parent, elems[i].elements );
 			parent.resizeRoot( true );
 		}
 		if ( 'symbol' == elemsType ) {
 			log( 'Type: Layer Group' );
 			parent = createGroup( parent, elems[i] );
+			addContextSettings( parent, elems[i] );
 			createElements( parent, elems[i].elements );
 			parent.resizeRoot( true );
 		}
@@ -122,6 +127,14 @@ function createElements( parent, elems, isMask ) {
 	// parent.resizeRoot( true );
 
 	return shape;
+}
+
+function addContextSettings( shape, attrs ) {
+	var contextSettings = shape.style().contextSettings();
+	contextSettings.opacity = Math.round( attrs.opacity ) / 100;
+	if ( fw2json.blendMode[attrs.blendMode] ) {
+		contextSettings.blendMode = fw2json.blendMode[attrs.blendMode];
+	}
 }
 
 function addFill( shape, attrs ) {
