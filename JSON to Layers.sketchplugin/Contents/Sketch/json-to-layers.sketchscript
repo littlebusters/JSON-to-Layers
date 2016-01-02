@@ -88,7 +88,7 @@ function createElements( parent, elems, isMask ) {
 				log( 'Has Mask' );
 				parent = createMask( parent, elems[i] );
 			}
-			var shape = addBezier( parent, elems[i].bezierPath[0] );
+			var shape = addBezier( parent, elems[i].bezierPath );
 			shape.setName( elems[i].name );
 			parent.addLayers( [shape] );
 			if ( null != elems[i].fill && !isMask ) {
@@ -304,28 +304,31 @@ function createSlice( artboard, attrs ) {
 
 function addBezier( artboard, attrs ) {
 	var bezierLine = NSBezierPath.bezierPath();
-	var nodes = attrs.nodes;
-	bezierLine.moveToPoint( NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) );
 
-	for ( var i = 1; i < nodes.length; i++ ) {
-		var ancher        = NSMakePoint( nodes[i].ancherPointX, nodes[i].ancherPointY );
-		var currentHandle = NSMakePoint( nodes[i].predPointX,   nodes[i].predPointY );
-		var prevHandle    = NSMakePoint( nodes[i - 1].succPointX, nodes[i - 1].succPointY );
-		// log( 'ancher:        ' + ancher );
-		// log( 'currentHandle: ' + currentHandle );
-		// log( 'prevHandle:    ' + prevHandle );
-		[bezierLine curveToPoint:ancher controlPoint1:prevHandle controlPoint2:currentHandle];
-	};
-	if ( attrs.isClosed ) {
-		[bezierLine 
-			curveToPoint:NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) 
-			controlPoint1:NSMakePoint( nodes[nodes.length - 1].succPointX, nodes[nodes.length - 1].succPointY )
-			controlPoint2:NSMakePoint( nodes[0].predPointX, nodes[0].predPointY )
-		];
-		bezierLine.closePath();
-		// log( 'closed-ancher:        ' + NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) );
-		// log( 'closed-currentHandle: ' + NSMakePoint( nodes[nodes.length - 1].succPointX, nodes[nodes.length - 1].succPointY ) );
-		// log( 'closed-prevHandle:    ' + NSMakePoint( nodes[0].predPointX, nodes[0].predPointY ) );
+	for ( var i = 0; i < attrs.length; i ++ ) {
+		var nodes = attrs[i].nodes;
+		bezierLine.moveToPoint( NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) );
+
+		for ( var j = 1; j < nodes.length; j++ ) {
+			var ancher        = NSMakePoint( nodes[j].ancherPointX, nodes[j].ancherPointY );
+			var currentHandle = NSMakePoint( nodes[j].predPointX,   nodes[j].predPointY );
+			var prevHandle    = NSMakePoint( nodes[j - 1].succPointX, nodes[j - 1].succPointY );
+			// log( 'ancher:        ' + ancher );
+			// log( 'currentHandle: ' + currentHandle );
+			// log( 'prevHandle:    ' + prevHandle );
+			[bezierLine curveToPoint:ancher controlPoint1:prevHandle controlPoint2:currentHandle];
+		};
+		if ( attrs[i].isClosed ) {
+			[bezierLine 
+				curveToPoint:NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) 
+				controlPoint1:NSMakePoint( nodes[nodes.length - 1].succPointX, nodes[nodes.length - 1].succPointY )
+				controlPoint2:NSMakePoint( nodes[0].predPointX, nodes[0].predPointY )
+			];
+			bezierLine.closePath();
+			// log( 'closed-ancher:        ' + NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) );
+			// log( 'closed-currentHandle: ' + NSMakePoint( nodes[nodes.length - 1].succPointX, nodes[nodes.length - 1].succPointY ) );
+			// log( 'closed-prevHandle:    ' + NSMakePoint( nodes[0].predPointX, nodes[0].predPointY ) );
+		}
 	}
 
 	var shape = MSShapeGroup.shapeWithBezierPath( bezierLine );
