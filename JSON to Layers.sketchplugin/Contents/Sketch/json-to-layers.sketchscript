@@ -24,7 +24,7 @@ var onRun = function ( context ) {
 		var artboards = doc.currentPage().artboards();
 
 		setGrid( artboards[i], fwJSON.documentSetting.grid );
-		addGuideline( artboards[i], fwJSON.pages[i].guides );
+		addGuideline( artboards[i], fwJSON.pages[i].guides, fwJSON.documentSetting.grid.gridOrigin );
 		createLayers( artboards[i], fwJSON.pages[i].layers );
 		// log( fwJSON.pages[i].width );
 
@@ -353,9 +353,15 @@ function setGrid( artboard, gridAttrs ) {
 	artboard.grid().setGridSize( gridAttrs.gridOrigin.x );
 }
 
-function addGuideline ( artboard, guides ) {
+function addGuideline ( artboard, guides, grid ) {
 	var vRuler = artboard.verticalRulerData();
 	var hRuler = artboard.horizontalRulerData();
+
+	// set origin
+	vRuler.setBase( grid.x );
+	hRuler.setBase( grid.y );
+
+	// set guidelines
 	for ( var i in guides.x ) {
 		vRuler.addGuideWithValue( guides.x[i] );
 	}
