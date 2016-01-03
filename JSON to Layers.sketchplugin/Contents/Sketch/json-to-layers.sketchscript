@@ -350,8 +350,7 @@ function addBezier( artboard, attrs ) {
 }
 
 function setGrid( artboard, gridAttrs ) {
-	log( artboard.class() );
-	// artboard.setRulerBase( { x: gridAttrs.gridOrigin.x, y: gridAttrs.gridOrigin.y} );
+	artboard.grid().setGridSize( gridAttrs.gridOrigin.x );
 }
 
 function addGuideline ( artboard, guides ) {
