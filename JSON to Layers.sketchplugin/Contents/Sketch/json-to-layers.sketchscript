@@ -442,7 +442,7 @@ function addGradientFill( shape, attrs ) {
 		case 'radial':
 			gradient.setGradientType( 1 );
 			break;
-		case 'angular':
+		case 'conical':
 			gradient.setGradientType( 2 );
 			break;
 		default:
@@ -518,6 +518,7 @@ function addGradientFill( shape, attrs ) {
 			}
 		}
 	}
+	log( optimazedPoints );
 
 	var orignPoint = optimazedPoints.length;
 	for ( var i = 0; i < orignPoint; i++ ) {
@@ -537,10 +538,12 @@ function addGradientFill( shape, attrs ) {
 	var shapeH = shape.frame().height();
 	var startX = ( attrs.gradientPoint[0].x - shapeX ) / shapeW;
 	var startY = ( attrs.gradientPoint[0].y - shapeY ) / shapeH;
-	var endX   = ( attrs.gradientPoint[1].x - shapeX ) / shapeW;
-	var endY   = ( attrs.gradientPoint[1].y - shapeY ) / shapeH;
 	gradient.setPoint_atIndex_( CGPointMake( startX, startY ), 0 );
-	gradient.setPoint_atIndex_( CGPointMake( endX, endY ), orignPoint - 1 );
+	if ( 'conical' != attrs.gradientType ) {
+		var endX   = ( attrs.gradientPoint[1].x - shapeX ) / shapeW;
+		var endY   = ( attrs.gradientPoint[1].y - shapeY ) / shapeH;
+		gradient.setPoint_atIndex_( CGPointMake( endX, endY ), orignPoint - 1 );
+	}
 }
 
 // utilities
