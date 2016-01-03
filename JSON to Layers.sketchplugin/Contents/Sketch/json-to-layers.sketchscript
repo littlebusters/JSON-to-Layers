@@ -244,8 +244,8 @@ function createText( artboard, attrs ) {
 	var textPartNum = attrs.text.textRuns.length;
 	text.stringValue = '';
 	for ( var i = 0; i < textPartNum; i++ ) {
-		text.stringValue = text.stringValue() + attrs.text.textRuns[i].charactors;
-		textPart.push( textPart[i] + attrs.text.textRuns[i].charactors.length );
+		text.stringValue = text.stringValue() + attrs.text.textRuns[i].characters;
+		textPart.push( textPart[i] + attrs.text.textRuns[i].characters.length );
 	}
 
 	if ( 1 < textPartNum ) {
@@ -350,7 +350,9 @@ function addBezier( artboard, attrs ) {
 }
 
 function setGrid( artboard, gridAttrs ) {
-	artboard.grid().setGridSize( gridAttrs.gridOrigin.x );
+	var grid = MSSimpleGrid.new();
+	grid.setGridSize( gridAttrs.gridSize.x );
+	artboard.grid = grid;
 }
 
 function addGuideline ( artboard, guides, grid ) {
