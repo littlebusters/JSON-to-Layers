@@ -292,7 +292,7 @@ function setFrame( targetLayer, attrs ) {
 }
 
 function createRectangle( artboard, attrs ) {
-	var rectangle = MSRectangleShape.new();;
+	var rectangle = MSRectangleShape.new();
 
 	rectangle.frame().x = attrs.left;
 	rectangle.frame().y = attrs.top;
