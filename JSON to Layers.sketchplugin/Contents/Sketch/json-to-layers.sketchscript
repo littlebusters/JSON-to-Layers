@@ -542,6 +542,16 @@ function addGradientFill( shape, attrs ) {
 }
 
 // utilities
+function getCoordfromTrigFunc( radius, angle ) {
+	var coord = {}
+	angle = 360 - angle;
+
+	coord.x = radius * Math.cos( angle / 180 * Math.PI );
+	coord.y = radius * Math.sin( angle / 180 * Math.PI );
+
+	return coord;
+}
+
 function getGradientStopColorOnOpacitySide ( assets ) {
 	log( assets );
 
