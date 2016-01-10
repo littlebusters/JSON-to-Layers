@@ -45,10 +45,12 @@ function createLayers( artboard, layers ) {
 		layerGroups[i] = createGroup( parent, layers[i] );
 		createElements( layerGroups[i], layers[i].elems );
 		parent.resizeRoot( true );
+		log( 'Parent Layer:' + parent.name() );
 	}
 }
 
 function createElements( parent, elems, isMask ) {
+	log( '-> Child Layer Proccessing' );
 	if ( !isMask ) isMask = false;
 	var shape;
 	var originParent = parent;
@@ -56,6 +58,7 @@ function createElements( parent, elems, isMask ) {
 		log( '-> Proccessing: ' + elems[i].name );
 		var elemsType = elems[i].type;
 		if ( 'text' == elemsType ) {
+			log( 'Type: Text' );
 			var shape = createText( parent, elems[i] );
 			shape.setName( elems[i].name );
 		}
