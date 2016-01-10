@@ -86,6 +86,7 @@ function createElements( parent, elems, isMask ) {
 			}
 		}
 		if ( 'path' == elemsType ) {
+			log( 'Type: Bezier Path' );
 			if ( null != elems[i].mask ) {
 				log( 'Has Mask' );
 				parent = createMask( parent, elems[i] );
@@ -102,6 +103,7 @@ function createElements( parent, elems, isMask ) {
 			}
 		}
 		if ( 'slice' == elemsType ) {
+			log( 'Type: Slice' );
 			var shape = createSlice( parent, elems[i] );
 			// shape.setName( elems[i].name );
 		}
