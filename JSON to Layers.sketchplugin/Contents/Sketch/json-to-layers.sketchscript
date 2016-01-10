@@ -227,12 +227,16 @@ function createMask( parent, attrs ) {
 }
 
 function createGroup( parent, attrs ) {
+function createGroup( parent, attrs, _isLayer ) {
+	var isLayer = _isLayer || false;
 	var group = parent.addLayerOfType( 'group' );
 	group.setName( attrs.layerName || attrs.name );
 	// layerName:"Layer 2", 
 	//						parentLayerNum:0, elems:[
 	// var layers = currentPage.layers();
 	// log( layers.objectAtIndex(1).name() );
+	group.hasClickThrough = ( isLayer ) ? 1 : 0;
+
 	return group;
 }
 
@@ -298,6 +302,7 @@ function createRectangle( artboard, attrs ) {
 	rectangle.frame().y = attrs.top;
 	rectangle.frame().width = attrs.width;
 	rectangle.frame().height = attrs.height;
+	rectangle = setFrame( rectangle, attrs );
 
 	var shape = MSShapeGroup.shapeWithPath( rectangle );
 	shape.layers().firstObject().cornerRadiusFloat = attrs.radius;
