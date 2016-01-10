@@ -149,6 +149,15 @@ function addContextSettings( shape, attrs ) {
 	}
 }
 
+function setFrame( targetLayer, attrs, parent ) {
+	targetLayer.frame().x = attrs.left - parent.absoluteRect().x();
+	targetLayer.frame().y = attrs.top - parent.absoluteRect().y();
+	targetLayer.frame().width = attrs.width;
+	targetLayer.frame().height = attrs.height;
+
+	return targetLayer;
+}
+
 function addFill( shape, attrs ) {
 	var fill = shape.style().fills().addNewStylePart();
 	
@@ -294,15 +303,6 @@ function createText( artboard, attrs ) {
 	return text;
 }
 
-function setFrame( targetLayer, attrs, parent ) {
-	targetLayer.frame().x = attrs.left - parent.absoluteRect().x();
-	targetLayer.frame().y = attrs.top - parent.absoluteRect().y();
-	targetLayer.frame().width = attrs.width;
-	targetLayer.frame().height = attrs.height;
-
-	return targetLayer;
-}
-
 function createRectangle( artboard, attrs ) {
 	var rectangle = MSRectangleShape.new();
 
@@ -396,27 +396,6 @@ function getOpacity( color ) {
 	opacity = opacity / digit;
 
 	return opacity;
-}
-
-function createArtboard ( _attrs ) {
-	var artboard = MSArtboardGroup.new();
-	doc.addLayer( artboard );
-	artboard.name = page.name;
-	artboard.frame().x = page.x;
-	artboard.frame().y = page.y;
-	artboard.frame().width  = page.width;
-	artboard.frame().height = page.height;
-}
-
-function createLayer() {
-	var artboard = MSArtboardGroup.new();
-	doc.addLayer( artboard );
-	artboard.name = page.name;
-	artboard.frame().x = page.x;
-	artboard.frame().y = page.y;
-	artboard.frame().width  = page.width;
-	artboard.frame().height = page.height;
-	log( 'Finished' );
 }
 
 function setFlatFill() {
