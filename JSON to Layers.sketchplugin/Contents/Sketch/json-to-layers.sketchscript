@@ -42,10 +42,11 @@ function createLayers( artboard, layers ) {
 		} else {
 			var parent = layerGroups[layers[i].parentLayerNum];
 		}
-		layerGroups[i] = createGroup( parent, layers[i] );
-		createElements( layerGroups[i], layers[i].elems );
-		parent.resizeRoot( true );
 		log( 'Parent Layer:' + parent.name() );
+		if ( layers[i].hasChildren ) {
+			layerGroups[i] = createGroup( parent, layers[i], true );
+			var bounds = createElements( layerGroups[i], layers[i].elems );
+		}
 	}
 }
 
@@ -53,7 +54,7 @@ function createElements( parent, elems, isMask ) {
 	log( '-> Child Layer Proccessing' );
 	if ( !isMask ) isMask = false;
 	var shape;
-	var originParent = parent;
+	var layers = [];
 	for (var i = elems.length - 1; i >= 0; i--) {
 		log( '-> Proccessing: ' + elems[i].name );
 		var elemsType = elems[i].type;
@@ -112,26 +113,32 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'layer group' == elemsType ) {
 			log( 'Type: Layer Group' );
-			parent = createGroup( parent, elems[i] );
-			addContextSettings( parent, elems[i] );
-			createElements( parent, elems[i].elements );
-			parent.resizeRoot( true );
+			shape = createGroup( parent, elems[i] );
+			addContextSettings( shape, elems[i] );
+			var bounds = createElements( shape, elems[i].elements );
+			parent.frame().x = bounds.origin.x;
+			parent.frame().y = bounds.origin.y;
 		}
 		if ( 'symbol' == elemsType ) {
 			log( 'Type: Layer Group' );
-			parent = createGroup( parent, elems[i] );
-			addContextSettings( parent, elems[i] );
-			createElements( parent, elems[i].elements );
-			parent.resizeRoot( true );
+			shape = createGroup( parent, elems[i] );
+			addContextSettings( shape, elems[i] );
+			var bounds = createElements( shape, elems[i].elements );
+			shape.frame().x = bounds.origin.x;
+			shape.frame().y = bounds.origin.y;
 		}
 		if ( null != elems[i].mask ) {
-			parent.resizeRoot( true );
+			// parent.resizeRoot( true );
 		}
-		parent = originParent;
+
+		layers.push( shape );
 	};
 	// parent.resizeRoot( true );
+	log( '!!! Finished createElements !!!');
+	log( '!!! resizeRoot()');
+	parent.resizeRoot( true );
 
-	return shape;
+	return MSLayerGroup.groupBoundsForLayers( layers );
 }
 
 function addContextSettings( shape, attrs ) {
@@ -209,8 +216,8 @@ function importBitmap( parent, attrs ) {
 	filePath = filePath.replace( "file:///Macintosh%20HD/", "/" );
 
 	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
-	bitmap.frame().x = attrs.left;
-	bitmap.frame().y = attrs.top;
+	bitmap.frame().x = attrs.left - parent.absoluteRect().x();
+	bitmap.frame().y = attrs.top  - parent.absoluteRect().y();
 	bitmap.name = attrs.name;
 
 	parent.addLayers( [bitmap] );
@@ -226,20 +233,16 @@ function createMask( parent, attrs ) {
 	var mask = createElements( maskGroup, attrs.mask.element, true );
 	log( 'Mask Object: ' + mask.frame() );
 	mask.setHasClippingMask( true );
+	log( '!!! resizeRoot()');
 	mask.resizeRoot( true );
 
 	return maskGroup;
 }
 
-function createGroup( parent, attrs ) {
 function createGroup( parent, attrs, _isLayer ) {
 	var isLayer = _isLayer || false;
 	var group = parent.addLayerOfType( 'group' );
 	group.setName( attrs.layerName || attrs.name );
-	// layerName:"Layer 2", 
-	//						parentLayerNum:0, elems:[
-	// var layers = currentPage.layers();
-	// log( layers.objectAtIndex(1).name() );
 	group.hasClickThrough = ( isLayer ) ? 1 : 0;
 
 	return group;
@@ -247,7 +250,7 @@ function createGroup( parent, attrs, _isLayer ) {
 
 function createText( artboard, attrs ) {
 	var text = artboard.addLayerOfType( 'text' );
-	text = setFrame( text, attrs );
+	text = setFrame( text, attrs, artboard );
 
 	var textPart = [0];
 	var textPartNum = attrs.text.textRuns.length;
@@ -291,9 +294,9 @@ function createText( artboard, attrs ) {
 	return text;
 }
 
-function setFrame( targetLayer, attrs ) {
-	targetLayer.frame().x = attrs.left;
-	targetLayer.frame().y = attrs.top;
+function setFrame( targetLayer, attrs, parent ) {
+	targetLayer.frame().x = attrs.left - parent.absoluteRect().x();
+	targetLayer.frame().y = attrs.top - parent.absoluteRect().y();
 	targetLayer.frame().width = attrs.width;
 	targetLayer.frame().height = attrs.height;
 
@@ -303,11 +306,7 @@ function setFrame( targetLayer, attrs ) {
 function createRectangle( artboard, attrs ) {
 	var rectangle = MSRectangleShape.new();
 
-	rectangle.frame().x = attrs.left;
-	rectangle.frame().y = attrs.top;
-	rectangle.frame().width = attrs.width;
-	rectangle.frame().height = attrs.height;
-	rectangle = setFrame( rectangle, attrs );
+	rectangle = setFrame( rectangle, attrs, artboard );
 
 	var shape = MSShapeGroup.shapeWithPath( rectangle );
 	shape.layers().firstObject().cornerRadiusFloat = attrs.radius;
@@ -319,7 +318,7 @@ function createRectangle( artboard, attrs ) {
 
 function createSlice( artboard, attrs ) {
 	var slice = MSSliceLayer.new();
-	slice = setFrame( slice, attrs );
+	slice = setFrame( slice, attrs, artboard );
 	slice.setName( attrs.name );
 
 	artboard.addSlice( slice );
