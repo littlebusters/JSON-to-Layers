@@ -248,6 +248,7 @@ function importBitmap( parent, attrs ) {
 	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
 	bitmap.frame().x = attrs.left - parent.absoluteRect().x();
 	bitmap.frame().y = attrs.top  - parent.absoluteRect().y();
+	bitmap = setFrame( bitmap, attrs, parent );
 	bitmap.name = attrs.name;
 
 	parent.addLayers( [bitmap] );
