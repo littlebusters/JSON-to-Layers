@@ -310,6 +310,17 @@ function addEffects( shape, attrs ) {
 			effect.type = 2;
 			effect.radius = attrs[i].zoom_blur_amount;
 		}
+		if ( 'ノイズを追加...' == attrs[i].name && attrs[i].EffectIsVisible ) {
+			var effect = shape.style().fills().addNewStylePart();
+			effect.fillType = 5;
+			if ( attrs[i].add_noise_use_color ) {
+				effect.noiseIndex = 3;
+			} else {
+				effect.noiseIndex = 2;
+			}
+			effect.contextSettings().blendMode = 9;
+			effect.contextSettings().opacity = Math.round( attrs[i].add_noise_amount / 4 ) / 100;
+		}
 	};
 }
 
