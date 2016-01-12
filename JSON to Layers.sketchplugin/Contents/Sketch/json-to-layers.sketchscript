@@ -304,6 +304,12 @@ function addEffects( shape, attrs ) {
 			effect.radius = attrs[i].motion_blur_distance;
 			effect.motionAngle = attrs[i].motion_blur_angle;
 		}
+		if ( 'ぼかし (ズーム)...' == attrs[i].name && attrs[i].EffectIsVisible ) {
+			var effect = shape.style().blur();
+			effect.isEnabled = 1;
+			effect.type = 2;
+			effect.radius = attrs[i].zoom_blur_amount;
+		}
 	};
 }
 
