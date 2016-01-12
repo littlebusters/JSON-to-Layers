@@ -365,6 +365,21 @@ function addEffects( shape, attrs ) {
 							color.alpha = psleAttrs[1] / 100;
 							effect.color = color;
 							break;
+						case 'outerGlow':
+							var effect = shape.style().shadows().addNewStylePart();
+							var subAttrs = psleAttrs[3].split( ':' );
+							effect.blurRadius = subAttrs[2];
+							
+							effect.offsetX = 0;
+							effect.offsetY = 0;
+							effect.spread = subAttrs[1];
+
+							var originColor = psleAttrs[5].split( ';' );
+							var color = MSColor.colorWithRGBADictionary( {r: originColor[1], g: originColor[2], b: originColor[3]} );
+							color.alpha = subAttrs[0] / 100;
+							effect.color = color;
+							effect.contextSettings().blendMode = fw2json.blendMode[psleAttrs[2]];
+							break;
 					}
 				}
 			};
