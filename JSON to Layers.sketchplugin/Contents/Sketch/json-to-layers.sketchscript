@@ -263,6 +263,18 @@ function addEffects( shape, attrs ) {
 			color.alpha = attrs[i].BevelContrast / 100;
 			effect.color = color;
 		}
+		if ( '光彩 (内側)' == attrs[i].name && attrs[i].EffectIsVisible ) {
+			var effect = shape.style().innerShadows().addNewStylePart();
+			effect.blurRadius = attrs[i].MaskSoftness;
+			
+			effect.offsetX = 0;
+			effect.offsetY = 0;
+			effect.spread = attrs[i].GlowWidth;
+
+			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
+			color.alpha = attrs[i].BevelContrast / 100;
+			effect.color = color;
+		}
 	};
 }
 
