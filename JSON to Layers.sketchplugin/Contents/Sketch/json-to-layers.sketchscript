@@ -238,6 +238,19 @@ function addEffects( shape, attrs ) {
 			color.alpha = getOpacity( attrs[i].ShadowColor );
 			effect.color = color;
 		}
+		if ( 'シャドウ (内側)' == attrs[i].name && attrs[i].EffectIsVisible ) {
+			var effect = shape.style().innerShadows().addNewStylePart();
+			effect.blurRadius = attrs[i].ShadowBlur;
+			
+			var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
+			effect.offsetX = coord.x;
+			effect.offsetY = coord.y;
+			effect.spread = 0;
+
+			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
+			color.alpha = getOpacity( attrs[i].ShadowColor );
+			effect.color = color;
+		}
 	};
 }
 
