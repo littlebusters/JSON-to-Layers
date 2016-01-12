@@ -275,6 +275,22 @@ function addEffects( shape, attrs ) {
 			color.alpha = attrs[i].BevelContrast / 100;
 			effect.color = color;
 		}
+		if ( 'ソリッドシャドウ…' == attrs[i].name && attrs[i].EffectIsVisible ) {
+			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].color ) );
+			color.alpha = 1;
+
+			for ( var j = attrs[i].distance - 1; j >= 0; j-- ) {
+				var effect = shape.style().shadows().addNewStylePart();
+				effect.blurRadius = 0;
+				
+				var coord = getCoordfromTrigFunc( j, attrs[i].angle );
+				effect.offsetX = coord.x;
+				effect.offsetY = coord.y;
+				effect.spread = 0;
+
+				effect.color = color;
+			};
+		}
 	};
 }
 
