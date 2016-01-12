@@ -337,6 +337,8 @@ function addEffects( shape, attrs ) {
 					log( '      isEnabled:' );
 					var psleAttrs = attrs[i][fw2json.PsLE[j]].split( '&' );
 					switch ( fw2json.PsLE[j] ) {
+						case 'satin':
+							break;
 						case 'dropShadow':
 							var effect = shape.style().shadows().addNewStylePart();
 							effect.blurRadius = psleAttrs[6];
@@ -379,6 +381,18 @@ function addEffects( shape, attrs ) {
 							color.alpha = subAttrs[0] / 100;
 							effect.color = color;
 							effect.contextSettings().blendMode = fw2json.blendMode[psleAttrs[2]];
+							break;
+						case 'innerGlow':
+							break;
+						case 'solidFill':
+							break;
+						case 'gradientFill':
+							break;
+						case 'patternFill':
+							break;
+						case 'bevelEmboss':
+							break;
+						case 'stroke':
 							break;
 					}
 				}
