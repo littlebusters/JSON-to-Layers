@@ -351,6 +351,20 @@ function addEffects( shape, attrs ) {
 							color.alpha = psleAttrs[1] / 100;
 							effect.color = color;
 							break;
+						case 'innerShadow':
+							var effect = shape.style().innerShadows().addNewStylePart();
+							effect.blurRadius = psleAttrs[6];
+							
+							var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
+							effect.offsetX = coord.x;
+							effect.offsetY = coord.y;
+							effect.spread = psleAttrs[7];
+
+							var originColor = psleAttrs[11].split( ';' );
+							var color = MSColor.colorWithRGBADictionary( {r: originColor[1], g: originColor[2], b: originColor[3]} );
+							color.alpha = psleAttrs[1] / 100;
+							effect.color = color;
+							break;
 					}
 				}
 			};
