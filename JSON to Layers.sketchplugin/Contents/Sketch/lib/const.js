@@ -16,5 +16,9 @@ fw2json.blendMode['hue'] = 12;
 fw2json.blendMode['saturation'] = 13;
 fw2json.blendMode['color'] = 14;
 fw2json.blendMode['luminosity'] = 15;
+
+fw2json.solidFill = [0, 0, 2, 10, 7, 5, 0, 0, 0, 1, 4, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 9, 8, 0, 6, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+fw2json.PsLE = ['satin', 'dropShadow', 'innerShadow', 'outerGlow', 'innerGlow', 'solidFill', 'gradientFill', 'patternFill', 'bevelEmboss', 'stroke'];
 // Sketch 3 not support
 // average, dissolve, inversecolorburn, softburn, linearburn, inversecolordodge, softdodge, lineardodge, softlight2, vividlight, linearlight, pinlight, hardmix, negation, red, green, blue, reflect, glow, freeze, heat, additive, subtractive, subtract, interpolation, stamp, xor, invert, tint, erase
