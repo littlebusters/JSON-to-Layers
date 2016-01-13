@@ -419,6 +419,18 @@ function addEffects( shape, attrs ) {
 							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
 							break;
 						case 'solidFill':
+							var effect = shape.style().fills().addNewStylePart();
+							effect.setFillType(0);
+							var originColor = psleAttrs[3].split( ';' );
+							var color = MSColor.colorWithRGBADictionary( {
+								r: bit2Percent( originColor[1] ), 
+								g: bit2Percent( originColor[2] ), 
+								b: bit2Percent( originColor[3] )
+							} );
+							color.alpha = psleAttrs[1] / 100;
+							var blendMode = psleAttrs[2];
+							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+							effect.color = color;
 							break;
 						case 'gradientFill':
 							break;
