@@ -337,6 +337,8 @@ function addEffects( shape, attrs ) {
 				if( '1' == attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) ) {
 					log( '      isEnabled:' );
 					var psleAttrs = attrs[i][fw2json.PsLE[j]].split( '&' );
+					log( '      psleAttrs:' );
+					log( psleAttrs );
 					switch ( fw2json.PsLE[j] ) {
 						case 'satin':
 							break;
@@ -394,6 +396,7 @@ function addEffects( shape, attrs ) {
 							color.alpha = subAttrs[0] / 100;
 							effect.color = color;
 							
+
 							var blendMode = psleAttrs[2];
 							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
 							break;
