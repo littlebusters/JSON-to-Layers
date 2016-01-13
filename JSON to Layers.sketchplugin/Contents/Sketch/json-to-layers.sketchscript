@@ -398,6 +398,25 @@ function addEffects( shape, attrs ) {
 							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
 							break;
 						case 'innerGlow':
+							var effect = shape.style().innerShadows().addNewStylePart();
+							var subAttrs = psleAttrs[3].split( ':' );
+							effect.blurRadius = subAttrs[2];
+							
+							effect.offsetX = 0;
+							effect.offsetY = 0;
+							effect.spread = subAttrs[1];
+
+							var originColor = psleAttrs[5].split( ';' );
+							var color = MSColor.colorWithRGBADictionary( {
+								r: bit2Percent( originColor[1] ), 
+								g: bit2Percent( originColor[2] ), 
+								b: bit2Percent( originColor[3] )
+							} );
+							color.alpha = subAttrs[0] / 100;
+							effect.color = color;
+							
+							var blendMode = psleAttrs[2];
+							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
 							break;
 						case 'solidFill':
 							break;
