@@ -350,7 +350,11 @@ function addEffects( shape, attrs ) {
 							effect.spread = psleAttrs[7];
 
 							var originColor = psleAttrs[11].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {r: originColor[1], g: originColor[2], b: originColor[3]} );
+							var color = MSColor.colorWithRGBADictionary( {
+								r: bit2Percent( originColor[1] ), 
+								g: bit2Percent( originColor[2] ), 
+								b: bit2Percent( originColor[3] )
+							} );
 							color.alpha = psleAttrs[1] / 100;
 							effect.color = color;
 							break;
@@ -364,7 +368,11 @@ function addEffects( shape, attrs ) {
 							effect.spread = psleAttrs[7];
 
 							var originColor = psleAttrs[11].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {r: originColor[1], g: originColor[2], b: originColor[3]} );
+							var color = MSColor.colorWithRGBADictionary( {
+								r: bit2Percent( originColor[1] ), 
+								g: bit2Percent( originColor[2] ), 
+								b: bit2Percent( originColor[3] )
+							} );
 							color.alpha = psleAttrs[1] / 100;
 							effect.color = color;
 							break;
@@ -378,7 +386,11 @@ function addEffects( shape, attrs ) {
 							effect.spread = subAttrs[1];
 
 							var originColor = psleAttrs[5].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {r: originColor[1], g: originColor[2], b: originColor[3]} );
+							var color = MSColor.colorWithRGBADictionary( {
+								r: bit2Percent( originColor[1] ), 
+								g: bit2Percent( originColor[2] ), 
+								b: bit2Percent( originColor[3] )
+							} );
 							color.alpha = subAttrs[0] / 100;
 							effect.color = color;
 							effect.contextSettings().blendMode = fw2json.blendMode[psleAttrs[2]];
@@ -800,4 +812,8 @@ function digit2Hex ( _digit ) {
 
 function hex2Digit ( _hex ) {
 	return ( parseInt( '0x' + _hex ).toString( 10 ) );
+}
+
+function bit2Percent ( val ) {
+	return floorWithDigit( val / 255, 4 );
 }
