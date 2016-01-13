@@ -395,7 +395,6 @@ function addEffects( shape, attrs ) {
 							} );
 							color.alpha = subAttrs[0] / 100;
 							effect.color = color;
-							
 
 							var blendMode = psleAttrs[2];
 							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
@@ -436,6 +435,28 @@ function addEffects( shape, attrs ) {
 							effect.color = color;
 							break;
 						case 'gradientFill':
+							var effect = shape.style().fills().addNewStylePart();
+							effect.setFillType(1);
+							log( '      opacity: ' + ( psleAttrs[3] ) );
+							log( '      opacity: ' + ( psleAttrs[3] / 100 ) );
+							effect.contextSettings().opacity = psleAttrs[3] / 100;
+							var coord = getCoordfromTrigFunc( 1, psleAttrs[4], true );
+							var coordStretch = ( Math.abs( coord.x ) > Math.abs( coord.y ) ) ? 1 / Math.abs( coord.x ) : 1 / Math.abs( coord.y );
+							coord.x = coord.x * coordStretch;
+							coord.y = coord.y * coordStretch;
+							var startX = 0;
+							var startY = 0;
+							// offset coordinate
+							if ( 0 > coord.x ) {
+								startX = startX + Math.abs( coord.x );
+								coord.x = 0;
+							}
+							if ( 0 > coord.y ) {
+								startY = startY + Math.abs( coord.y );
+								coord.y = 0;
+							}
+							effect.gradient().setPoint_atIndex_( CGPointMake( startX, startY ), 0 )
+							effect.gradient().setPoint_atIndex_( CGPointMake( coord.x, coord.y ), 1 )
 							break;
 						case 'patternFill':
 							break;
