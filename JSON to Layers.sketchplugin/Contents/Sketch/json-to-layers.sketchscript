@@ -393,7 +393,9 @@ function addEffects( shape, attrs ) {
 							} );
 							color.alpha = subAttrs[0] / 100;
 							effect.color = color;
-							effect.contextSettings().blendMode = fw2json.blendMode[psleAttrs[2]];
+							
+							var blendMode = psleAttrs[2];
+							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
 							break;
 						case 'innerGlow':
 							break;
