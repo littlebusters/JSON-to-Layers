@@ -463,6 +463,32 @@ function addEffects( shape, attrs ) {
 						case 'bevelEmboss':
 							break;
 						case 'stroke':
+							var effect = shape.style().borders().addNewStylePart();
+							var originColor = psleAttrs[4].split( ';' );
+							var color = MSColor.colorWithRGBADictionary( {
+								r: bit2Percent( originColor[1] ), 
+								g: bit2Percent( originColor[2] ), 
+								b: bit2Percent( originColor[3] )
+							} );
+							color.alpha = psleAttrs[1] / 100;
+							effect.color = color;
+							effect.thickness = psleAttrs[2];
+							var blendMode = psleAttrs[3];
+							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+							switch ( psleAttrs[5] ) {
+								case 'centeredFrame':
+									effect.setPosition( 0 );
+									break; 
+								case 'insetFrame':
+									effect.setPosition( 1 );
+									break; 
+								case 'outsetFrame':
+									effect.setPosition( 2 );
+									break; 
+								default:
+									effect.setPosition( 0 );
+									break; 
+							}
 							break;
 					}
 				}
