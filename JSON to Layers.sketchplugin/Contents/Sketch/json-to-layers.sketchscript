@@ -25,7 +25,7 @@ var onRun = function ( context ) {
 
 		setGrid( artboards[i], fwJSON.documentSetting.grid );
 		addGuideline( artboards[i], fwJSON.pages[i].guides, fwJSON.documentSetting.grid.gridOrigin );
-		createLayers( artboards[i], fwJSON.pages[i].layers );
+		createLayers( artboards[i], fwJSON.pages[i].topLayers );
 		// log( fwJSON.pages[i].width );
 
 		artboardPosition += fwJSON.pages[i].width + 100;
@@ -36,7 +36,7 @@ var onRun = function ( context ) {
 function createLayers( artboard, layers ) {
 	var layerGroups = [];
 	for ( var i = 0; i < layers.length; i++ ) {
-		log( 'Layer: ' + layers[i].layerName );
+		log( 'Layer: ' + layers[i].name );
 		if ( 0 > layers[i].parentLayerNum ) {
 			var parent = artboard;
 		} else {
@@ -56,7 +56,7 @@ function createElements( parent, elems, isMask ) {
 	var shape;
 	var layers = [];
 	for (var i = elems.length - 1; i >= 0; i--) {
-		log( '-> Proccessing: ' + elems[i].name );
+		log( '-> Proccessing: ' + ( elems[i].name || elems[i].name ) + ' (D / ' + elems[i].type );
 		var elemsType = elems[i].type;
 		if ( 'text' == elemsType ) {
 			log( 'Type: Text' );
@@ -225,7 +225,7 @@ function addBorder( shape, attrs ) {
 
 function addEffects( shape, attrs ) {
 	for ( var i = attrs.length - 1; i >= 0; i-- ) {
-		log( attrs[i].name );
+		log( '  Applied Effect: ' + attrs[i].name );
 		if ( 'ドロップシャドウ' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().shadows().addNewStylePart();
 			effect.blurRadius = attrs[i].ShadowBlur;
@@ -527,7 +527,7 @@ function createMask( parent, attrs ) {
 function createGroup( parent, attrs, _isLayer ) {
 	var isLayer = _isLayer || false;
 	var group = parent.addLayerOfType( 'group' );
-	group.setName( attrs.layerName || attrs.name );
+	group.setName( attrs.name || attrs.name );
 	group.hasClickThrough = ( isLayer ) ? 1 : 0;
 
 	return group;
