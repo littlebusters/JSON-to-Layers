@@ -33,12 +33,12 @@ var onRun = function ( context ) {
 
 }
 
-function createLayers( artboard, layers ) {
+function createLayers( parent, layers ) {
 	var layerGroups = [];
 	for ( var i = 0; i < layers.length; i++ ) {
 		log( 'Layer: ' + layers[i].name );
 		if ( 0 > layers[i].parentLayerNum ) {
-			var parent = artboard;
+			var parent = parent;
 		} else {
 			var parent = layerGroups[layers[i].parentLayerNum];
 		}
@@ -111,7 +111,7 @@ function createElements( parent, elems, isMask ) {
 			var shape = createSlice( parent, elems[i] );
 			// shape.setName( elems[i].name );
 		}
-		if ( 'layer group' == elemsType ) {
+		if ( 'group' == elemsType ) {
 			log( 'Type: Layer Group' );
 			shape = createGroup( parent, elems[i] );
 			addContextSettings( shape, elems[i] );
@@ -533,9 +533,9 @@ function createGroup( parent, attrs, _isLayer ) {
 	return group;
 }
 
-function createText( artboard, attrs ) {
-	var text = artboard.addLayerOfType( 'text' );
-	text = setFrame( text, attrs, artboard );
+function createText( parent, attrs ) {
+	var text = parent.addLayerOfType( 'text' );
+	text = setFrame( text, attrs, parent );
 
 	var textPart = [0];
 	var textPartNum = attrs.text.textRuns.length;
@@ -579,28 +579,28 @@ function createText( artboard, attrs ) {
 	return text;
 }
 
-function createRectangle( artboard, attrs ) {
+function createRectangle( parent, attrs ) {
 	var rectangle = MSRectangleShape.new();
 
-	rectangle = setFrame( rectangle, attrs, artboard );
+	rectangle = setFrame( rectangle, attrs, parent );
 
 	var shape = MSShapeGroup.shapeWithPath( rectangle );
 	shape.layers().firstObject().cornerRadiusFloat = attrs.radius;
 	// shape.layers().firstObject().cornerRadiusString = "7/0/0/10";
-	artboard.addLayers( [shape] );
+	parent.addLayers( [shape] );
 
 	return shape;
 }
 
-function createSlice( artboard, attrs ) {
+function createSlice( parent, attrs ) {
 	var slice = MSSliceLayer.new();
-	slice = setFrame( slice, attrs, artboard );
+	slice = setFrame( slice, attrs, parent );
 	slice.setName( attrs.name );
 
-	artboard.addSlice( slice );
+	parent.addSlice( slice );
 }
 
-function addBezier( artboard, attrs ) {
+function addBezier( parent, attrs ) {
 	var bezierLine = NSBezierPath.bezierPath();
 
 	for ( var i = 0; i < attrs.length; i ++ ) {
@@ -634,15 +634,15 @@ function addBezier( artboard, attrs ) {
 	return shape;
 }
 
-function setGrid( artboard, gridAttrs ) {
+function setGrid( parent, gridAttrs ) {
 	var grid = MSSimpleGrid.new();
 	grid.setGridSize( gridAttrs.gridSize.x );
-	artboard.grid = grid;
+	parent.grid = grid;
 }
 
-function addGuideline ( artboard, guides, grid ) {
-	var vRuler = artboard.verticalRulerData();
-	var hRuler = artboard.horizontalRulerData();
+function addGuideline ( parent, guides, grid ) {
+	var vRuler = parent.verticalRulerData();
+	var hRuler = parent.horizontalRulerData();
 
 	// set origin
 	vRuler.setBase( grid.x );
