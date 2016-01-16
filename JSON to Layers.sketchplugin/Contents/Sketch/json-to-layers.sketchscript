@@ -314,14 +314,14 @@ function addEffects( shape, attrs ) {
 			effect.color = color;
 		}
 		if ( 'Photoshop' == attrs[i].name.substr( 0, 9 ) ) {
-			log( '  PsLE:' );
+			// log( '  PsLE:' );
 			for ( var j = fw2json.PsLE.length - 1; j >= 0; j-- ) {
-				log( '    Flag: ' + fw2json.PsLE[j] + ': ' + attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) );
+				// log( '    Flag: ' + fw2json.PsLE[j] + ': ' + attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) );
 				if( '1' == attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) ) {
-					log( '      isEnabled:' );
+					// log( '      isEnabled:' );
 					var psleAttrs = attrs[i][fw2json.PsLE[j]].split( '&' );
-					log( '      psleAttrs:' );
-					log( psleAttrs );
+					// log( '      psleAttrs:' );
+					// log( psleAttrs );
 					switch ( fw2json.PsLE[j] ) {
 						case 'satin':
 							break;
@@ -420,8 +420,8 @@ function addEffects( shape, attrs ) {
 						case 'gradientFill':
 							var effect = shape.style().fills().addNewStylePart();
 							effect.setFillType(1);
-							log( '      opacity: ' + ( psleAttrs[3] ) );
-							log( '      opacity: ' + ( psleAttrs[3] / 100 ) );
+							// log( '      opacity: ' + ( psleAttrs[3] ) );
+							// log( '      opacity: ' + ( psleAttrs[3] / 100 ) );
 							effect.contextSettings().opacity = psleAttrs[3] / 100;
 							var coord = getCoordfromTrigFunc( 1, psleAttrs[4], true );
 							var coordStretch = ( Math.abs( coord.x ) > Math.abs( coord.y ) ) ? 1 / Math.abs( coord.x ) : 1 / Math.abs( coord.y );
