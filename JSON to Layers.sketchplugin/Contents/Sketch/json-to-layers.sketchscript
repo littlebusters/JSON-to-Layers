@@ -96,7 +96,6 @@ function createElements( parent, elems, isMask ) {
 		if ( 'slice' == elemsType ) {
 			log( 'Type: Slice' );
 			var shape = createSlice( parent, elems[i] );
-			// shape.setName( elems[i].name );
 		}
 		if ( 'group' == elemsType ) {
 			log( 'Type: Layer Group' );
@@ -578,7 +577,7 @@ function createRectangle( parent, attrs ) {
 function createSlice( parent, attrs ) {
 	var slice = MSSliceLayer.new();
 	slice = setFrame( slice, attrs, parent );
-	slice.setName( attrs.name );
+	slice.setName( attrs.baseName );
 
 	parent.addSlice( slice );
 }
