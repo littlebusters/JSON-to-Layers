@@ -53,20 +53,14 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'bitmap' == elemsType ) {
 			log( 'Type: Bitmap' );
-			if ( null != elems[i].mask ) {
-				log( 'Has Mask' );
-				parent = createMask( parent, elems[i] );
-			}
-			var shape = importBitmap( parent, elems[i] );
+			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
+			var shape = importBitmap( tempParent, elems[i] );
 			addContextSettings( shape, elems[i] );
 		}
 		if ( 'rectangle' == elemsType ) {
 			log( 'Type: Rectangle' );
-			if ( null != elems[i].mask ) {
-				log( 'Has Mask' );
-				parent = createMask( parent, elems[i] );
-			}
-			var shape = createRectangle( parent, elems[i] );
+			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
+			var shape = createRectangle( tempParent, elems[i] );
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
 			if ( null != elems[i].fill && !isMask ) {
@@ -78,14 +72,11 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'path' == elemsType ) {
 			log( 'Type: Bezier Path' );
-			if ( null != elems[i].mask ) {
-				log( 'Has Mask' );
-				parent = createMask( parent, elems[i] );
-			}
-			var shape = addBezier( parent, elems[i].bezierPath );
+			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
+			var shape = addBezier( tempParent, elems[i].bezierPath );
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
-			parent.addLayers( [shape] );
+			tempParent.addLayers( [shape] );
 			if ( null != elems[i].fill && !isMask ) {
 				addFill( shape, elems[i].fill );
 			}
