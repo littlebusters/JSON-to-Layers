@@ -25,7 +25,7 @@ var onRun = function ( context ) {
 
 		setGrid( artboards[i], fwJSON.documentSetting.grid );
 		addGuideline( artboards[i], fwJSON.pages[i].guides, fwJSON.documentSetting.grid.gridOrigin );
-		createLayers( artboards[i], fwJSON.pages[i].topLayers );
+		createElements( artboards[i], fwJSON.pages[i].topLayers );
 		// log( fwJSON.pages[i].width );
 
 		artboardPosition += fwJSON.pages[i].width + 100;
@@ -33,31 +33,19 @@ var onRun = function ( context ) {
 
 }
 
-function createLayers( parent, layers ) {
-	var layerGroups = [];
-	for ( var i = 0; i < layers.length; i++ ) {
-		log( 'Layer: ' + layers[i].name );
-		if ( 0 > layers[i].parentLayerNum ) {
-			var parent = parent;
-		} else {
-			var parent = layerGroups[layers[i].parentLayerNum];
-		}
-		log( 'Parent Layer:' + parent.name() );
-		if ( layers[i].hasChildren ) {
-			layerGroups[i] = createGroup( parent, layers[i], true );
-			var bounds = createElements( layerGroups[i], layers[i].elems );
-		}
-	}
-}
-
 function createElements( parent, elems, isMask ) {
 	log( '-> Child Layer Proccessing' );
 	if ( !isMask ) isMask = false;
 	var shape;
-	var layers = [];
-	for (var i = elems.length - 1; i >= 0; i--) {
-		log( '-> Proccessing: ' + ( elems[i].name || elems[i].name ) + ' (D / ' + elems[i].type );
+	for ( var i = elems.length - 1; i >= 0; i-- ) {
+		log( '-> Proccessing: ' + elems[i].name + ' / ' + elems[i].type );
 		var elemsType = elems[i].type;
+		if ( 'layer' == elemsType && elems[i].hasChildren ) {
+			log( 'Type: Layer' );
+			shape = createGroup( parent, elems[i], true );
+			createElements( shape, elems[i].elems );
+			shape.resizeRoot( false );
+		}
 		if ( 'text' == elemsType ) {
 			log( 'Type: Text' );
 			var shape = createText( parent, elems[i] );
@@ -81,7 +69,6 @@ function createElements( parent, elems, isMask ) {
 			var shape = createRectangle( parent, elems[i] );
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
-			// artboard.addLayers( [shape] );
 			if ( null != elems[i].fill && !isMask ) {
 				addFill( shape, elems[i].fill );
 			}
@@ -115,17 +102,15 @@ function createElements( parent, elems, isMask ) {
 			log( 'Type: Layer Group' );
 			shape = createGroup( parent, elems[i] );
 			addContextSettings( shape, elems[i] );
-			var bounds = createElements( shape, elems[i].elements );
-			parent.frame().x = bounds.origin.x;
-			parent.frame().y = bounds.origin.y;
+			createElements( shape, elems[i].elements );
+			shape.resizeRoot( false );
 		}
 		if ( 'symbol' == elemsType ) {
 			log( 'Type: Layer Group' );
 			shape = createGroup( parent, elems[i] );
 			addContextSettings( shape, elems[i] );
-			var bounds = createElements( shape, elems[i].elements );
-			shape.frame().x = bounds.origin.x;
-			shape.frame().y = bounds.origin.y;
+			createElements( shape, elems[i].elements );
+			shape.resizeRoot( false );
 		}
 		if ( null != elems[i].effectList ) {
 			addEffects( shape, elems[i].effectList.effects );
@@ -133,15 +118,13 @@ function createElements( parent, elems, isMask ) {
 		if ( null != elems[i].mask ) {
 			// parent.resizeRoot( true );
 		}
-
-		layers.push( shape );
 	};
 	// parent.resizeRoot( true );
 	log( '!!! Finished createElements !!!');
-	log( '!!! resizeRoot()');
-	parent.resizeRoot( true );
+	log( '!!! resizeRoot() to ' + parent.name() );
+	parent.resizeRoot( false );
 
-	return MSLayerGroup.groupBoundsForLayers( layers );
+	return shape;
 }
 
 function addContextSettings( shape, attrs ) {
