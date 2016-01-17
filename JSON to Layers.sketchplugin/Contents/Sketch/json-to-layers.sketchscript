@@ -25,6 +25,7 @@ var onRun = function ( context ) {
 
 		setGrid( artboards[i], fwJSON.documentSetting.grid );
 		addGuideline( artboards[i], fwJSON.pages[i].guides, fwJSON.documentSetting.grid.gridOrigin );
+		fwJSON.pages[i].topLayers.reverse();
 		createElements( artboards[i], fwJSON.pages[i].topLayers );
 		// log( fwJSON.pages[i].width );
 
