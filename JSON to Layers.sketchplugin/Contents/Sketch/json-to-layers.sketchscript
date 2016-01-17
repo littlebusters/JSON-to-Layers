@@ -492,7 +492,7 @@ function createMask( parent, attrs ) {
 	log( 'Mask Object: ' + mask.frame() );
 	mask.setHasClippingMask( true );
 	log( '!!! resizeRoot()');
-	mask.resizeRoot( true );
+	parent.resizeRoot( false );
 
 	return maskGroup;
 }
@@ -575,15 +575,20 @@ function createSlice( parent, attrs ) {
 
 function addBezier( parent, attrs ) {
 	var bezierLine = NSBezierPath.bezierPath();
+	log( '  - addBezier Parent Frame' );
+	log( parent.frame() );
+
+	var offsetX = parent.absoluteRect().x();
+	var offsetY = parent.absoluteRect().y();
 
 	for ( var i = 0; i < attrs.length; i ++ ) {
 		var nodes = attrs[i].nodes;
-		bezierLine.moveToPoint( NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) );
+		bezierLine.moveToPoint( NSMakePoint( nodes[0].ancherPointX - offsetX, nodes[0].ancherPointY - offsetY ) );
 
 		for ( var j = 1; j < nodes.length; j++ ) {
-			var ancher        = NSMakePoint( nodes[j].ancherPointX, nodes[j].ancherPointY );
-			var currentHandle = NSMakePoint( nodes[j].predPointX,   nodes[j].predPointY );
-			var prevHandle    = NSMakePoint( nodes[j - 1].succPointX, nodes[j - 1].succPointY );
+			var ancher        = NSMakePoint( nodes[j].ancherPointX - offsetX, nodes[j].ancherPointY - offsetY );
+			var currentHandle = NSMakePoint( nodes[j].predPointX - offsetX,   nodes[j].predPointY - offsetY );
+			var prevHandle    = NSMakePoint( nodes[j - 1].succPointX - offsetX, nodes[j - 1].succPointY - offsetY );
 			// log( 'ancher:        ' + ancher );
 			// log( 'currentHandle: ' + currentHandle );
 			// log( 'prevHandle:    ' + prevHandle );
@@ -591,9 +596,9 @@ function addBezier( parent, attrs ) {
 		};
 		if ( attrs[i].isClosed ) {
 			[bezierLine 
-				curveToPoint:NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) 
-				controlPoint1:NSMakePoint( nodes[nodes.length - 1].succPointX, nodes[nodes.length - 1].succPointY )
-				controlPoint2:NSMakePoint( nodes[0].predPointX, nodes[0].predPointY )
+				curveToPoint:NSMakePoint( nodes[0].ancherPointX - offsetX, nodes[0].ancherPointY - offsetY ) 
+				controlPoint1:NSMakePoint( nodes[nodes.length - 1].succPointX - offsetX, nodes[nodes.length - 1].succPointY - offsetY )
+				controlPoint2:NSMakePoint( nodes[0].predPointX - offsetX, nodes[0].predPointY - offsetY )
 			];
 			bezierLine.closePath();
 			// log( 'closed-ancher:        ' + NSMakePoint( nodes[0].ancherPointX, nodes[0].ancherPointY ) );
