@@ -64,12 +64,15 @@ function createElements( parent, elems, isMask ) {
 			var shape = createRectangle( tempParent, elems[i] );
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
-			if ( null != elems[i].fill && !isMask ) {
-				addFill( shape, elems[i].fill );
+			if ( !isMask ) {
+				addPathAttributes( shape, elems[i].pathAttributes );
 			}
-			if ( null != elems[i].border && !isMask ) {
-				addBorder( shape, elems[i].border );
-			}
+			// if ( null != elems[i].fill && !isMask ) {
+			//	addFill( shape, elems[i].fill );
+			// }
+			// if ( null != elems[i].border && !isMask ) {
+			//	addBorder( shape, elems[i].border );
+			// }
 		}
 		if ( 'path' == elemsType ) {
 			log( 'Type: Bezier Path' );
@@ -78,12 +81,15 @@ function createElements( parent, elems, isMask ) {
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
 			tempParent.addLayers( [shape] );
-			if ( null != elems[i].fill && !isMask ) {
-				addFill( shape, elems[i].fill );
+			if ( !isMask ) {
+				addPathAttributes( shape, elems[i].pathAttributes );
 			}
-			if ( null != elems[i].border && !isMask ) {
-				addBorder( shape, elems[i].border );
-			}
+			// if ( null != elems[i].fill && !isMask ) {
+			//	addFill( shape, elems[i].fill );
+			// }
+			// if ( null != elems[i].border && !isMask ) {
+			//	addBorder( shape, elems[i].border );
+			// }
 		}
 		if ( 'slice' == elemsType ) {
 			log( 'Type: Slice' );
@@ -133,6 +139,24 @@ function setFrame( targetLayer, attrs, parent ) {
 	targetLayer.frame().height = attrs.height;
 
 	return targetLayer;
+}
+
+function addPathAttributes( shape, attrs ) {
+	if ( null != attrs.fill ) {
+		var fill = shape.style().fills().addNewStylePart();
+
+		if ( 'gradient' == attrs.fillType ) {
+			// addGradientFill( shape, attrs );
+		} else if ( 'pattern' == attrs.fillType ) {
+			addPatternFill( shape, attrs.fill.pattern.patternURI );
+		} else {
+			var color = MSColor.colorWithSVGString( getHexColor( attrs.fillColor ) );
+			color.alpha = getOpacity( attrs.fillColor );
+			fill.color = color;
+		}
+	}
+
+	if ( null != attrs.brush ) {}
 }
 
 function addFill( shape, attrs ) {
