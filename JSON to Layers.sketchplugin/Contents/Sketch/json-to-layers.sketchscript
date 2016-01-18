@@ -146,7 +146,7 @@ function addPathAttributes( shape, attrs ) {
 		var fill = shape.style().fills().addNewStylePart();
 
 		if ( 'gradient' == attrs.fillType ) {
-			// addGradientFill( shape, attrs );
+			addGradientFill( shape, attrs );
 		} else if ( 'pattern' == attrs.fillType ) {
 			addPatternFill( shape, attrs.fill.pattern.patternURI );
 		} else {
@@ -677,21 +677,6 @@ function getOpacity( color ) {
 	return opacity;
 }
 
-function setFlatFill() {
-	var doc = context.document;
-
-	var rectangle = doc.currentPage().addLayerOfType( 'rectangle' );
-	rectangle.setName( 'test rectangle' );
-	rectangle.frame().x = 0;
-	rectangle.frame().y = 0;
-	rectangle.frame().width = 100;
-	rectangle.frame().height = 100;
-
-	var shepeFill = rectangle.style().fills().addNewStylePart();
-	shepeFill.color = MSColor.colorWithSVGString( 'ff0000' );
-
-}
-
 function addPatternFill( shape, attrs ) {
 	var filePath = NSImage.new().initWithContentsOfFile( attrs.replace( "file:///Macintosh%20HD/", "/" ) );
 	var shapeStyle = shape.style();
@@ -702,11 +687,12 @@ function addPatternFill( shape, attrs ) {
 	shapeFill.setPatternImage_collection_( filePath, fillCollection );
 }
 
-function addGradientFill( shape, attrs ) {
+function addGradientFill( shape, pathAttrs ) {
 	var shapeStyle = shape.style();
 	// shapeStyle.fills().addNewStylePart();
 	var shapeFill = shapeStyle.fill();
 	shapeFill.setFillType( 1 ); // gradient fill
+	var attrs = pathAttrs.fill.gradient;
 
 	var gradient = shapeFill.gradient();
 	switch ( attrs.gradientType ) {
@@ -724,7 +710,7 @@ function addGradientFill( shape, attrs ) {
 			break;
 	}
 
-	var gradientNodes = attrs.gradientNodes.nodes.concat( attrs.gradientNodes.opacityNodes );
+	var gradientNodes = attrs.nodes.concat( attrs.opacityNodes );
 
 	// sort gradient stops by position
 	for ( var i = 0; i < gradientNodes.length - 1; i++ ) {
@@ -810,12 +796,12 @@ function addGradientFill( shape, attrs ) {
 	var shapeY = shape.frame().y();
 	var shapeW = shape.frame().width();
 	var shapeH = shape.frame().height();
-	var startX = ( attrs.gradientPoint[0].x - shapeX ) / shapeW;
-	var startY = ( attrs.gradientPoint[0].y - shapeY ) / shapeH;
+	var startX = ( pathAttrs.fillHandle1.x - shapeX ) / shapeW;
+	var startY = ( pathAttrs.fillHandle1.y - shapeY ) / shapeH;
 	gradient.setPoint_atIndex_( CGPointMake( startX, startY ), 0 );
 	if ( 'conical' != attrs.gradientType ) {
-		var endX   = ( attrs.gradientPoint[1].x - shapeX ) / shapeW;
-		var endY   = ( attrs.gradientPoint[1].y - shapeY ) / shapeH;
+		var endX = ( pathAttrs.fillHandle2.x - shapeX ) / shapeW;
+		var endY = ( pathAttrs.fillHandle2.y - shapeY ) / shapeH;
 		gradient.setPoint_atIndex_( CGPointMake( endX, endY ), orignPoint - 1 );
 	}
 }
