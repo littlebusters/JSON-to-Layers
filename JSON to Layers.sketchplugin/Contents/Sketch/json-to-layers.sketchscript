@@ -67,12 +67,6 @@ function createElements( parent, elems, isMask ) {
 			if ( !isMask ) {
 				addPathAttributes( shape, elems[i].pathAttributes );
 			}
-			// if ( null != elems[i].fill && !isMask ) {
-			//	addFill( shape, elems[i].fill );
-			// }
-			// if ( null != elems[i].border && !isMask ) {
-			//	addBorder( shape, elems[i].border );
-			// }
 		}
 		if ( 'path' == elemsType ) {
 			log( 'Type: Bezier Path' );
@@ -84,12 +78,6 @@ function createElements( parent, elems, isMask ) {
 			if ( !isMask ) {
 				addPathAttributes( shape, elems[i].pathAttributes );
 			}
-			// if ( null != elems[i].fill && !isMask ) {
-			//	addFill( shape, elems[i].fill );
-			// }
-			// if ( null != elems[i].border && !isMask ) {
-			//	addBorder( shape, elems[i].border );
-			// }
 		}
 		if ( 'slice' == elemsType ) {
 			log( 'Type: Slice' );
@@ -156,30 +144,18 @@ function addPathAttributes( shape, attrs ) {
 		}
 	}
 
-	if ( null != attrs.brush ) {}
-}
-
-function addFill( shape, attrs ) {
-	var fill = shape.style().fills().addNewStylePart();
-	
-	if( 'gradient' == attrs.fillType ) {
-		addGradientFill( shape, attrs.gradient );
-	} else if ( 'pattern' == attrs.fillType ) {
-		addPatternFill( shape, attrs.pattern );
-	} else {
-		var color = MSColor.colorWithSVGString( getHexColor( attrs.fillColor ) );
-		color.alpha = getOpacity( attrs.fillColor );
-		fill.color = color;
+	if ( null != attrs.brush ) {
+		addBorder( shape, attrs );
 	}
 }
 
 function addBorder( shape, attrs ) {
 	var border = shape.style().borders().addNewStylePart();
-	var color = MSColor.colorWithSVGString( attrs.color );
-	color.alpha = attrs.opacity;
+	var color = MSColor.colorWithSVGString( getHexColor( attrs.brushColor ) );
+	color.alpha = getOpacity( attrs.brushColor );
 	border.color = color;
-	border.thickness = attrs.thickness;
-	switch ( attrs.position ) {
+	border.thickness = attrs.brush.diameter;
+	switch ( attrs.brushPlacement ) {
 		case 'center':
 			border.setPosition( 0 );
 			break; 
@@ -195,7 +171,7 @@ function addBorder( shape, attrs ) {
 	}
 
 	var borderOptions = shape.style();
-	switch ( attrs.edge ) {
+	switch ( attrs.brush.shape ) {
 		case 'square':
 			borderOptions.borderOptions().setLineCapStyle( 0 );
 			borderOptions.borderOptions().setLineJoinStyle( 0 );
@@ -210,12 +186,12 @@ function addBorder( shape, attrs ) {
 			break; 
 	}
 
-	if ( 1 == attrs.dashType || 2 == attrs.dashType ) {
+	if ( 1 == attrs.brush.numDashes || 2 == attrs.brush.numDashes ) {
 		var dashAttrs = [];
-		var gapOffest = attrs.edge == 'circle' ? attrs.thickness : 0;
-		for ( var i = 0; i < attrs.dashType; i++ ) {
-			dashAttrs[i * 2] = attrs.dashAttr[i].dash;
-			dashAttrs[i * 2 + 1] = attrs.dashAttr[i].gap + gapOffest;
+		var gapOffest = attrs.brush.shape == 'circle' ? attrs.brush.diameter : 0;
+		for ( var i = 0; i < attrs.brush.numDashes; i++ ) {
+			dashAttrs[i * 2] = attrs.brush['dashOnSize' + ( i + 1 )];
+			dashAttrs[i * 2 + 1] = attrs.brush['dashOffSize' + ( i + 1 )] + gapOffest;
 		}
 		borderOptions.borderOptions().setDashPattern( dashAttrs );
 	}
