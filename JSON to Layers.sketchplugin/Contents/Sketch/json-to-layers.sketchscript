@@ -510,32 +510,39 @@ function createGroup( parent, attrs, _isLayer ) {
 function createText( parent, attrs ) {
 	var text = parent.addLayerOfType( 'text' );
 	text = setFrame( text, attrs, parent );
+	log( text.frame().x() );log( text.frame().x() + ( attrs.pixelRect.left - attrs.left ) );
+	text.frame().setX( text.frame().x() + ( attrs.pixelRect.left - attrs.left ) );
+	text.frame().setY( text.frame().y() + ( attrs.pixelRect.top - attrs.top ) );
+	log( text.frame().x() );
+	// text.frame().x = 500;
 
 	var textPart = [0];
-	var textPartNum = attrs.text.textRuns.length;
+	var textPartNum = attrs.textRuns.length;
 	text.stringValue = '';
 	for ( var i = 0; i < textPartNum; i++ ) {
-		text.stringValue = text.stringValue() + attrs.text.textRuns[i].characters;
-		textPart.push( textPart[i] + attrs.text.textRuns[i].characters.length );
+		text.stringValue = text.stringValue() + attrs.textRuns[i].characters;
+		textPart.push( textPart[i] + attrs.textRuns[i].characters.length );
 	}
-
+hexToColor
 	if ( 1 < textPartNum ) {
 		for ( var i = 0; i < textPartNum; i++ ) {
 			var range = NSMakeRange( textPart[i], textPart[i + 1] - textPart[i] );
-			var textFont = NSFont.fontWithName_size_( attrs.text.textRuns[i].face, attrs.text.textRuns[i].size );
+			var textFont = NSFont.fontWithName_size_( attrs.textRuns[i].face, attrs.textRuns[i].size );
+			var color = hexToColor( attrs.textRuns[i].fillColor );
 
 			text.setIsEditingText( true );
 			text.addAttribute_value_forRange( NSFontAttributeName, textFont, range );
+			text.addAttribute_value_forRange( NSForegroundColorAttributeName, color, range );
 			text.setIsEditingText( false );
 		}
 	} else {
-		text.fontSize           = attrs.text.fontSize;
-		text.lineSpacing        = attrs.text.leading;
-		text.fontPostscriptName = attrs.text.fontFace;
-		text.textColor          = MSColor.colorWithSVGString( attrs.text.fillColor );
+		text.fontSize           = attrs.fontSize;
+		text.lineSpacing        = attrs.leading;
+		text.fontPostscriptName = attrs.fontFace;
+		text.textColor          = MSColor.colorWithSVGString( attrs.fillColor );
 	}
 	
-	switch ( attrs.text.alignment ) {
+	switch ( attrs.alignment ) {
 		case 'left':
 			text.setTextAlignment( 0 );
 			break;
@@ -633,23 +640,6 @@ function addGuideline ( parent, guides, grid ) {
 	for ( var i in guides.y ) {
 		hRuler.addGuideWithValue( guides.y[i] );
 	}
-}
-
-function getHexColor( color ) {
-	if( 7 == color.length ) return color;
-	return color.slice( 0, 7 );
-}
-
-function getOpacity( color ) {
-	if( 7 == color.length ) return 1;
-
-	var digit = Math.pow( 10, 2 );
-	var hex = color.slice( 7, 9 );
-	var opacity = parseInt( '0x' + hex ).toString( 10 ) / 255;
-	opacity = Math.floor( opacity * digit );
-	opacity = opacity / digit;
-
-	return opacity;
 }
 
 function addPatternFill( shape, attrs ) {
@@ -863,4 +853,28 @@ function hex2Digit ( _hex ) {
 
 function bit2Percent ( val ) {
 	return floorWithDigit( val / 255, 4 );
+}
+
+function getHexColor( color ) {
+	if( 7 == color.length ) return color;
+	return color.slice( 0, 7 );
+}
+
+function getOpacity( color ) {
+	if( 7 == color.length ) return 1;
+
+	var hex = color.slice( 7, 9 );
+	var opacity = parseInt( '0x' + hex ).toString( 10 ) / 255;
+	opacity = floorWithDigit( opacity, 2 );
+
+	return opacity;
+}
+
+function hexToColor ( hex ) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex),
+        red = parseInt(result[1], 16) / 255,
+        green = parseInt(result[2], 16) / 255,
+        blue = parseInt(result[3], 16) / 255,
+        alpha = getOpacity( hex );
+    return NSColor.colorWithCalibratedRed_green_blue_alpha( red, green, blue, alpha )
 }
