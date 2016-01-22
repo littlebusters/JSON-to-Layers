@@ -11,25 +11,29 @@ var onRun = function ( context ) {
 	// var fwJSON = JSON.parse( json );
 	var fwJSON = ( new Function( 'return ' + json ) )();
 
-	var artboardPosition = 0; 
+	var artboardPageOffset = 0; 
+	var artboardStateOffset = 0; 
 	for ( var i = 0; i < fwJSON.pages.length; i++ ) {
-		var artboard = MSArtboardGroup.new();
-		artboard.setName( fwJSON.pages[i].pageName );
-		artboard.frame().setX( artboardPosition );
-		artboard.frame().setY( 0 );
-		artboard.frame().setWidth( fwJSON.pages[i].width );
-		artboard.frame().setHeight( fwJSON.pages[i].height );
-		// doc.addLayer( artboard );
-		currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
-		var artboards = doc.currentPage().artboards();
+		for ( var stateIndex = 0; stateIndex < fwJSON.pages[i].frames.length; stateIndex++ ) {
+			var artboard = MSArtboardGroup.new();
+			artboard.setName( fwJSON.pages[i].pageName );
+			artboard.frame().setX( artboardPageOffset );
+			artboard.frame().setY( artboardStateOffset );
+			artboard.frame().setWidth( fwJSON.pages[i].width );
+			artboard.frame().setHeight( fwJSON.pages[i].height );
+			artboardStateOffset = artboardStateOffset + fwJSON.pages[i].height + 100;
+			currentPage.addLayer( artboard );
+			// currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
+			var artboards = doc.currentPage().artboards();
 
-		setGrid( artboards[i], fwJSON.documentSetting.grid );
-		addGuideline( artboards[i], fwJSON.pages[i].guides, fwJSON.documentSetting.grid.gridOrigin );
-		fwJSON.pages[i].topLayers.reverse();
-		createElements( artboards[i], fwJSON.pages[i].topLayers );
-		// log( fwJSON.pages[i].width );
-
-		artboardPosition += fwJSON.pages[i].width + 100;
+			setGrid( artboards[i], fwJSON.documentSetting.grid );
+			addGuideline( artboards[i], fwJSON.pages[i].guides, fwJSON.documentSetting.grid.gridOrigin );
+			fwJSON.pages[i].frames[stateIndex].topLayers.reverse();
+			createElements( artboards[i], fwJSON.pages[i].frames[stateIndex].topLayers );
+			// log( fwJSON.pages[i].width );
+		};
+		artboardPageOffset += fwJSON.pages[i].width + 100;
+		artboardStateOffset = 0;
 	}
 
 }
