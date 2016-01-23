@@ -22,8 +22,6 @@ var onRun = function ( context ) {
 			artboard.frame().setWidth( fwJSON.pages[i].width );
 			artboard.frame().setHeight( fwJSON.pages[i].height );
 			artboardStateOffset = artboardStateOffset + fwJSON.pages[i].height + 100;
-			currentPage.addLayer( artboard );
-			// currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
 			// currentPage.addLayer( artboard );
 			currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
 			var artboards = doc.currentPage().artboards();
@@ -38,12 +36,14 @@ var onRun = function ( context ) {
 		artboardStateOffset = 0;
 	}
 
+	log( '-------------------- Close Proccessing ---------------------' );
+
 }
 
 function createElements( parent, elems, isMask ) {
 	log( '-> Child Layer Proccessing' );
 	if ( !isMask ) isMask = false;
-	var shape;
+	// var shape;
 	for ( var i = elems.length - 1; i >= 0; i-- ) {
 		log( '-> Proccessing: ' + elems[i].name + ' / ' + elems[i].type );
 		var elemsType = elems[i].type;
@@ -91,14 +91,14 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'group' == elemsType ) {
 			log( 'Type: Layer Group' );
-			shape = createGroup( parent, elems[i] );
+			var shape = createGroup( parent, elems[i] );
 			addContextSettings( shape, elems[i] );
 			createElements( shape, elems[i].elements );
 			shape.resizeRoot( false );
 		}
 		if ( 'symbol' == elemsType ) {
 			log( 'Type: Layer Group' );
-			shape = createGroup( parent, elems[i] );
+			var shape = createGroup( parent, elems[i] );
 			addContextSettings( shape, elems[i] );
 			createElements( shape, elems[i].elements );
 			shape.resizeRoot( false );
@@ -528,6 +528,7 @@ function createText( parent, attrs ) {
 		text.stringValue = text.stringValue() + attrs.textRuns[i].characters;
 		textPart.push( textPart[i] + attrs.textRuns[i].characters.length );
 	}
+
 	if ( 1 < textPartNum ) {
 		for ( var i = 0; i < textPartNum; i++ ) {
 			var range = NSMakeRange( textPart[i], textPart[i + 1] - textPart[i] );
