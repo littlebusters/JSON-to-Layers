@@ -24,6 +24,8 @@ var onRun = function ( context ) {
 			artboardStateOffset = artboardStateOffset + fwJSON.pages[i].height + 100;
 			currentPage.addLayer( artboard );
 			// currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
+			// currentPage.addLayer( artboard );
+			currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
 			var artboards = doc.currentPage().artboards();
 
 			setGrid( artboards[i], fwJSON.documentSetting.grid );
@@ -107,6 +109,8 @@ function createElements( parent, elems, isMask ) {
 		if ( null != elems[i].mask ) {
 			// parent.resizeRoot( true );
 		}
+		shape.isLocked = elems[i].locked;
+		shape.isVisible = elems[i].visible;
 	};
 	// parent.resizeRoot( true );
 	log( '!!! Finished createElements !!!');
@@ -579,6 +583,8 @@ function createSlice( parent, attrs ) {
 	slice.setName( attrs.baseName );
 
 	parent.addSlice( slice );
+
+	return slice;
 }
 
 function addBezier( parent, attrs ) {
