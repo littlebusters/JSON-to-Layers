@@ -14,7 +14,7 @@ var onRun = function ( context ) {
 	var artboardPageOffset = 0; 
 	var artboardStateOffset = 0; 
 	for ( var i = 0; i < fwJSON.pages.length; i++ ) {
-		log( 'Page: ' + fwJSON.pages[i].pageName + '//////////////////////' );
+		log( 'Page: ' + fwJSON.pages[i].pageName + ' /////////////////////////////////' );
 		for ( var stateIndex = 0; stateIndex < fwJSON.pages[i].frames.length; stateIndex++ ) {
 			log( 'Frame (state): ' + stateIndex );
 			var artboard = MSArtboardGroup.new();
@@ -57,19 +57,19 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'text' == elemsType ) {
 			log( '     Type: Text' );
-			var shape = createText( parent, elems[i] );
+			var shape = createText( parent, elems[i], isMask );
 			shape.setName( elems[i].name );
 		}
 		if ( 'bitmap' == elemsType ) {
 			log( '     Type: Bitmap' );
 			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
-			var shape = importBitmap( tempParent, elems[i] );
+			var shape = importBitmap( tempParent, elems[i], isMask );
 			addContextSettings( shape, elems[i] );
 		}
 		if ( 'rectangle' == elemsType ) {
 			log( '     Type: Rectangle' );
 			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
-			var shape = createRectangle( tempParent, elems[i] );
+			var shape = createRectangle( tempParent, elems[i], isMask );
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
 			if ( !isMask ) {
@@ -79,7 +79,7 @@ function createElements( parent, elems, isMask ) {
 		if ( 'path' == elemsType ) {
 			log( '     Type: Bezier Path' );
 			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
-			var shape = addBezier( tempParent, elems[i].bezierPath );
+			var shape = addBezier( tempParent, elems[i].bezierPath, isMask );
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
 			tempParent.addLayers( [shape] );
@@ -89,7 +89,7 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'slice' == elemsType ) {
 			log( '     Type: Slice' );
-			var shape = createSlice( parent, elems[i] );
+			var shape = createSlice( parent, elems[i], isMask );
 		}
 		if ( 'group' == elemsType ) {
 			log( '     Type: Layer Group' );
@@ -115,9 +115,11 @@ function createElements( parent, elems, isMask ) {
 		shape.isVisible = elems[i].visible;
 	};
 	// parent.resizeRoot( true );
-	log( '!!! Finished createElements !!!');
-	log( '!!! resizeRoot() to ' + parent.name() );
-	parent.resizeRoot( false );
+	if ( !isMask ) {
+		log( '!!! Finished createElements !!!');
+		log( '!!! resizeRoot() to ' + parent.name() );
+		parent.resizeRoot( false );
+	}
 
 	return shape;
 }
@@ -131,8 +133,14 @@ function addContextSettings( shape, attrs ) {
 }
 
 function setFrame( targetLayer, attrs, parent ) {
-	targetLayer.frame().x = attrs.left - parent.absoluteRect().x();
-	targetLayer.frame().y = attrs.top - parent.absoluteRect().y();
+	log( '     -> setFrame()' );
+	log( parent );
+	// log( parent.absoluteRect() );
+	// log( parent.frame() );
+	var offsetX = parent ? parent.absoluteRect().x() : 0;
+	var offsetY = parent ? parent.absoluteRect().y() : 0;
+	targetLayer.frame().x = attrs.left - offsetX;// - parent.absoluteRect().x();
+	targetLayer.frame().y = attrs.top  - offsetY;// - parent.absoluteRect().y();
 	targetLayer.frame().width = attrs.width;
 	targetLayer.frame().height = attrs.height;
 
@@ -481,12 +489,12 @@ function addEffects( shape, attrs ) {
 	};
 }
 
-function importBitmap( parent, attrs ) {
+function importBitmap( parent, attrs, isMask ) {
 	var filePath = attrs.uri;
 	filePath = filePath.replace( "file:///Macintosh%20HD/", "/" );
 
 	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
-	bitmap = setFrame( bitmap, attrs, parent );
+	bitmap = setFrame( bitmap, attrs, ( isMask ? parent : false ) );
 	bitmap.name = attrs.name;
 
 	parent.addLayers( [bitmap] );
@@ -502,8 +510,8 @@ function createMask( parent, attrs ) {
 	var mask = createElements( maskGroup, attrs.mask.element, true );
 	log( '     Mask Object: ' + mask.frame() );
 	mask.setHasClippingMask( true );
-	log( '!!! resizeRoot()');
-	parent.resizeRoot( false );
+	// log( '!!! resizeRoot()');
+	// parent.resizeRoot( false );
 
 	return maskGroup;
 }
@@ -517,9 +525,9 @@ function createGroup( parent, attrs, _isLayer ) {
 	return group;
 }
 
-function createText( parent, attrs ) {
+function createText( parent, attrs, isMask ) {
 	var text = parent.addLayerOfType( 'text' );
-	text = setFrame( text, attrs, parent );
+	text = setFrame( text, attrs, ( isMask ? parent : false ) );
 	text.frame().setX( text.frame().x() + ( attrs.pixelRect.left - attrs.left ) );
 	text.frame().setY( text.frame().y() + ( attrs.pixelRect.top - attrs.top ) );
 
@@ -567,10 +575,10 @@ function createText( parent, attrs ) {
 	return text;
 }
 
-function createRectangle( parent, attrs ) {
+function createRectangle( parent, attrs, isMask ) {
 	var rectangle = MSRectangleShape.new();
 
-	rectangle = setFrame( rectangle, attrs, parent );
+	rectangle = setFrame( rectangle, attrs, ( isMask ? parent : false ) );
 
 	var shape = MSShapeGroup.shapeWithPath( rectangle );
 	shape.layers().firstObject().cornerRadiusFloat = attrs.radius;
@@ -580,9 +588,9 @@ function createRectangle( parent, attrs ) {
 	return shape;
 }
 
-function createSlice( parent, attrs ) {
+function createSlice( parent, attrs, isMask ) {
 	var slice = MSSliceLayer.new();
-	slice = setFrame( slice, attrs, parent );
+	slice = setFrame( slice, attrs, ( isMask ? parent : false ) );
 	slice.setName( attrs.baseName );
 
 	parent.addSlice( slice );
@@ -590,13 +598,13 @@ function createSlice( parent, attrs ) {
 	return slice;
 }
 
-function addBezier( parent, attrs ) {
+function addBezier( parent, attrs, isMask ) {
 	var bezierLine = NSBezierPath.bezierPath();
 	log( '     -> addBezier Parent Frame' );
 	// log( parent.frame() );
 
-	var offsetX = parent.absoluteRect().x();
-	var offsetY = parent.absoluteRect().y();
+	var offsetX = parent ? parent.absoluteRect().x() : 0;
+	var offsetY = parent ? parent.absoluteRect().y() : 0;
 
 	for ( var i = 0; i < attrs.length; i ++ ) {
 		var nodes = attrs[i].nodes;
@@ -663,6 +671,8 @@ function addPatternFill( shape, attrs ) {
 
 function addGradientFill( shape, pathAttrs ) {
 	var shapeStyle = shape.style();
+	log( '>>> addGradientFill' );
+	log( shape.frame() );
 	// shapeStyle.fills().addNewStylePart();
 	var shapeFill = shapeStyle.fill();
 	shapeFill.setFillType( 1 ); // gradient fill
