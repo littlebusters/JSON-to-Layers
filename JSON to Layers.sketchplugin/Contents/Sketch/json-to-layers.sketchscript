@@ -28,10 +28,10 @@ var onRun = function ( context ) {
 			currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
 			var artboards = doc.currentPage().artboards();
 
-			setGrid( artboards[i], fwJSON.documentSetting.grid );
-			addGuideline( artboards[i], fwJSON.pages[i].guides, fwJSON.documentSetting.grid.gridOrigin );
+			setGrid( artboard, fwJSON.documentSetting.grid );
+			addGuideline( artboard, fwJSON.pages[i].guides, fwJSON.documentSetting.grid.gridOrigin );
 			fwJSON.pages[i].frames[stateIndex].topLayers.reverse();
-			createElements( artboards[i], fwJSON.pages[i].frames[stateIndex].topLayers );
+			createElements( artboard, fwJSON.pages[i].frames[stateIndex].topLayers );
 			// log( fwJSON.pages[i].width );
 		};
 		artboardPageOffset += fwJSON.pages[i].width + 100;
@@ -603,8 +603,11 @@ function addBezier( parent, attrs, isMask ) {
 	log( '     -> addBezier Parent Frame' );
 	// log( parent.frame() );
 
-	var offsetX = parent ? parent.absoluteRect().x() : 0;
-	var offsetY = parent ? parent.absoluteRect().y() : 0;
+	// var offsetX = parent ? parent.absoluteRect().x() : 0;
+	// var offsetY = parent ? parent.absoluteRect().y() : 0;
+	var offsetX = 0;
+	var offsetY = 0;
+	log ( '        -> Offset: ' + offsetX + ' / ' + offsetY );
 
 	for ( var i = 0; i < attrs.length; i ++ ) {
 		var nodes = attrs[i].nodes;
