@@ -14,9 +14,9 @@ var onRun = function ( context ) {
 	var artboardPageOffset = 0; 
 	var artboardStateOffset = 0; 
 	for ( var i = 0; i < fwJSON.pages.length; i++ ) {
-		log( 'Page: ' + fwJSON.pages[i].pageName + ' /////////////////////////////////' );
+		log( 'Page: ' + fwJSON.pages[i].pageName + ' //////////////////////////////////////////' );
 		for ( var stateIndex = 0; stateIndex < fwJSON.pages[i].frames.length; stateIndex++ ) {
-			log( 'Frame (state): ' + stateIndex );
+			log( 'Frame (state): ' + stateIndex + ' ------------------------------------------>' );
 			var artboard = MSArtboardGroup.new();
 			artboard.setName( fwJSON.pages[i].pageName );
 			artboard.frame().setX( artboardPageOffset );
@@ -134,7 +134,7 @@ function addContextSettings( shape, attrs ) {
 
 function setFrame( targetLayer, attrs, parent ) {
 	log( '     -> setFrame()' );
-	log( parent );
+	// log( parent );
 	// log( parent.absoluteRect() );
 	// log( parent.frame() );
 	var offsetX = parent ? parent.absoluteRect().x() : 0;
