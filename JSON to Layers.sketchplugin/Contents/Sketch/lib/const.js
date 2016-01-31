@@ -22,3 +22,9 @@ fw2json.solidFill = [0, 0, 2, 10, 7, 5, 0, 0, 0, 1, 4, 12, 13, 14, 15, 0, 0, 0, 
 fw2json.PsLE = ['satin', 'dropShadow', 'innerShadow', 'outerGlow', 'innerGlow', 'solidFill', 'gradientFill', 'patternFill', 'bevelEmboss', 'stroke'];
 // Sketch 3 not support
 // average, dissolve, inversecolorburn, softburn, linearburn, inversecolordodge, softdodge, lineardodge, softlight2, vividlight, linearlight, pinlight, hardmix, negation, red, green, blue, reflect, glow, freeze, heat, additive, subtractive, subtract, interpolation, stamp, xor, invert, tint, erase
+
+fw2json.appVer = {};
+fw2json.appVer.full = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+fw2json.appVer.major    = ( fw2json.appVer.full.split( '.' ) )[0];
+fw2json.appVer.minor    = ( fw2json.appVer.full.split( '.' ) )[1];
+fw2json.appVer.revision = ( fw2json.appVer.full.split( '.' ) )[2] || 0;

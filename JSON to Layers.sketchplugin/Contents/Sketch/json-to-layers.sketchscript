@@ -53,7 +53,11 @@ function createElements( parent, elems, isMask ) {
 			log( '     Type: Layer' );
 			shape = createGroup( parent, elems[i], true );
 			createElements( shape, elems[i].elems );
-			shape.resizeRoot( false );
+			if ( 5 < fw2json.appVer.minor ) {
+				shape.resizeRoot( false );
+			} else {
+				shape.resizeToFitChildrenWithOption( false );
+			}
 		}
 		if ( 'text' == elemsType ) {
 			log( '     Type: Text' );
@@ -96,14 +100,22 @@ function createElements( parent, elems, isMask ) {
 			var shape = createGroup( parent, elems[i] );
 			addContextSettings( shape, elems[i] );
 			createElements( shape, elems[i].elements );
-			shape.resizeRoot( false );
+			if ( 5 < fw2json.appVer.minor ) {
+				shape.resizeRoot( false );
+			} else {
+				shape.resizeToFitChildrenWithOption( false );
+			}
 		}
 		if ( 'symbol' == elemsType ) {
 			log( '     Type: Layer Group' );
 			var shape = createGroup( parent, elems[i] );
 			addContextSettings( shape, elems[i] );
 			createElements( shape, elems[i].elements );
-			shape.resizeRoot( false );
+			if ( 5 < fw2json.appVer.minor ) {
+				shape.resizeRoot( false );
+			} else {
+				shape.resizeToFitChildrenWithOption( false );
+			}
 		}
 		if ( null != elems[i].effectList ) {
 			addEffects( shape, elems[i].effectList.effects );
@@ -118,7 +130,11 @@ function createElements( parent, elems, isMask ) {
 	if ( !isMask ) {
 		log( '!!! Finished createElements !!!');
 		log( '!!! resizeRoot() to ' + parent.name() );
-		parent.resizeRoot( false );
+		if ( 5 < fw2json.appVer.minor ) {
+			parent.resizeRoot( false );
+		} else {
+			parent.resizeToFitChildrenWithOption( false );
+		}
 	}
 
 	return shape;
@@ -667,9 +683,16 @@ function addPatternFill( shape, attrs ) {
 	var shapeStyle = shape.style();
 	var shapeFill = shapeStyle.fill();
 	
-	var fillCollection = shapeFill.documentData().images();
-	shapeFill.setFillType(4);
-	shapeFill.setPatternImage_collection_( filePath, fillCollection );
+	shapeFill.setFillType( 4 );
+	shapeFill.setPatternFillType( 1 );
+
+	if ( 5 < fw2json.appVer.minor ) {
+		var fillCollection = shapeFill.documentData().images();
+		shapeFill.setPatternImage_collection_( filePath, fillCollection );
+	} else {
+		shape.style().fills().firstObject().setPatternImage( filePath );
+		shape.style().fills().firstObject().setPatternFillType( 1 );
+	}
 }
 
 function addGradientFill( shape, pathAttrs ) {
