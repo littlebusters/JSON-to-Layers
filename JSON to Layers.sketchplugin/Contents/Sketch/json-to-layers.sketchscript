@@ -113,7 +113,8 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'group' == elemsType ) {
 			log( '     Type: Layer Group' );
-			var shape = createGroup( parent, elems[i] );
+			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
+			var shape = createGroup( tempParent, elems[i], isMask );
 			addContextSettings( shape, elems[i] );
 			createElements( shape, elems[i].elements );
 			if ( 5 < fw2json.appVer.minor ) {
@@ -562,6 +563,9 @@ function createText( parent, attrs, isMask ) {
 	text = setFrame( text, attrs, ( isMask ? parent : false ) );
 	text.frame().setX( text.frame().x() + ( attrs.pixelRect.left - attrs.left ) );
 	text.frame().setY( text.frame().y() + ( attrs.pixelRect.top - attrs.top ) );
+	if ( !attrs.autoExpand ) {
+		text.textBehaviour = 1;
+	}
 
 	var textPart = [0];
 	var textPartNum = attrs.textRuns.length;
