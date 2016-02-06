@@ -76,9 +76,9 @@ function createElements( parent, elems, isMask ) {
 			}
 		}
 		if ( 'text' == elemsType ) {
-			log( '     Type: Text' );
+			log( '     Type: Text: ' + elems[i].textChars );
 			var shape = createText( parent, elems[i], isMask );
-			shape.setName( elems[i].name );
+			shape.setName( elems[i].textChars );
 		}
 		if ( 'bitmap' == elemsType ) {
 			log( '     Type: Bitmap' );
@@ -561,8 +561,6 @@ function createGroup( parent, attrs, _isLayer ) {
 function createText( parent, attrs, isMask ) {
 	var text = parent.addLayerOfType( 'text' );
 	text = setFrame( text, attrs, ( isMask ? parent : false ) );
-	text.frame().setX( text.frame().x() + ( attrs.pixelRect.left - attrs.left ) );
-	text.frame().setY( text.frame().y() + ( attrs.pixelRect.top - attrs.top ) );
 	if ( !attrs.autoExpand ) {
 		text.textBehaviour = 1;
 	}
