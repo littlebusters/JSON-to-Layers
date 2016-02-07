@@ -776,7 +776,7 @@ function addGradientFill( shape, pathAttrs ) {
 					index++;
 					break;
 				}
-			} else if ( gradientNodes[i - 1].position != gradientNodes[i].position ) {
+			} else if ( 0 < i && gradientNodes[i - 1].position != gradientNodes[i].position ) {
 				var gradientAssets = {prev:{}, next:{}, current:{}};
 
 				gradientAssets.prev.color    = optimazedPoints[index - 1].color;
@@ -803,6 +803,10 @@ function addGradientFill( shape, pathAttrs ) {
 				}
 				index++;
 				break;
+			} else {
+				optimazedPoints[index] = {};
+				optimazedPoints[index].color = gradientNodes[j].color;
+				optimazedPoints[index].position = gradientNodes[j].position;
 			}
 		}
 	}
