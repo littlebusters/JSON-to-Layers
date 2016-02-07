@@ -543,6 +543,11 @@ function createMask( parent, attrs ) {
 	var mask = createElements( maskGroup, attrs.mask.element, true );
 	log( '     Mask Object: ' + mask.frame() );
 	mask.setHasClippingMask( true );
+	if ( 'mask to path' == attrs.mask.mode) {
+		mask.clippingMaskMode = 0; // Outline
+	} else {
+		mask.clippingMaskMode = 1; // Alpha
+	}
 	// log( '!!! resizeRoot()');
 	// parent.resizeRoot( false );
 
