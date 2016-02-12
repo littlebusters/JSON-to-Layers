@@ -615,13 +615,43 @@ function createText( parent, attrs, isMask ) {
 }
 
 function createRectangle( parent, attrs, isMask ) {
-	var rectangle = MSRectangleShape.new();
+	var originMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+	var isTransform = false;
+	for (var i = 0; i < originMatrix.length; i++) {
+		if ( originMatrix[i] != attrs.transform.matrix[i] && ( 6 != i && 7 != i) ) {
+			isTransform = true;
+			break;
+		}
+	}
+	if ( isTransform ) {
+		var m = attrs.transform.matrix;
+		var ow = attrs.originalSides['right'] - attrs.originalSides['left'],
+		    oh = attrs.originalSides['bottom'] - attrs.originalSides['top'];
+		var ol = attrs.originalSides['left'],
+		    ot = attrs.originalSides['top'],
+		    ob = attrs.originalSides['bottom'],
+		    or = attrs.originalSides['right'];
+		var rectangle = NSBezierPath.bezierPath();
+		rectangle.moveToPoint(NSMakePoint( m[0] * ol + m[3] * ot + m[6], m[1] * ol + m[4] * ot + m[7] ));
+		rectangle.lineToPoint(NSMakePoint( m[0] * or + m[3] * ot + m[6], m[1] * or + m[4] * ot + m[7] ));
+		rectangle.lineToPoint(NSMakePoint( m[0] * or + m[3] * ob + m[6], m[1] * or + m[4] * ob + m[7] ));
+		rectangle.lineToPoint(NSMakePoint( m[0] * ol + m[3] * ob + m[6], m[1] * ol + m[4] * ob + m[7] ));
+		rectangle.closePath();
+		log( rectangle.treeAsDictionary() );
 
-	rectangle = setFrame( rectangle, attrs, ( isMask ? parent : false ) );
+		var shape = MSShapeGroup.shapeWithBezierPath( rectangle );
+		for (var i = 0; i < shape.layers().firstObject().path().points().length(); i++) {
+			shape.layers().firstObject().path().points().objectAtIndex( i ).setCornerRadius( attrs.radius );
+		}
+	} else {
+		var rectangle = MSRectangleShape.new();
 
-	var shape = MSShapeGroup.shapeWithPath( rectangle );
-	shape.layers().firstObject().cornerRadiusFloat = attrs.radius;
-	// shape.layers().firstObject().cornerRadiusString = "7/0/0/10";
+		rectangle = setFrame( rectangle, attrs, ( isMask ? parent : false ) );
+
+		var shape = MSShapeGroup.shapeWithPath( rectangle );
+		shape.layers().firstObject().cornerRadiusFloat = attrs.radius;
+		// shape.layers().firstObject().cornerRadiusString = "7/0/0/10";
+	}
 	parent.addLayers( [shape] );
 
 	return shape;
