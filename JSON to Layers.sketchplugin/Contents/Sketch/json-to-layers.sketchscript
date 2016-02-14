@@ -617,40 +617,73 @@ function createText( parent, attrs, isMask ) {
 function createRectangle( parent, attrs, isMask ) {
 	var originMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 	var isTransform = false;
+	
 	for (var i = 0; i < originMatrix.length; i++) {
-		if ( originMatrix[i] != attrs.transform.matrix[i] && ( 6 != i && 7 != i) ) {
+		if ( originMatrix[i] != attrs.transform.matrix[i] && ( 0 != i && 4 != i && 6 != i && 7 != i) ) {
 			isTransform = true;
 			break;
 		}
 	}
+	var m = attrs.transform.matrix;
+	var ow = attrs.originalSides['right'] - attrs.originalSides['left'],
+	    oh = attrs.originalSides['bottom'] - attrs.originalSides['top'];
+	var ol = attrs.originalSides['left'],
+	    ot = attrs.originalSides['top'],
+	    ob = attrs.originalSides['bottom'],
+	    or = attrs.originalSides['right'];
+	var bounds = [
+		attrs.left,               attrs.top,
+		attrs.left + attrs.width, attrs.top,
+		attrs.left + attrs.width, attrs.top + attrs.height,
+		attrs.left,               attrs.top + attrs.height
+	];
+
 	if ( isTransform ) {
-		var m = attrs.transform.matrix;
-		var ow = attrs.originalSides['right'] - attrs.originalSides['left'],
-		    oh = attrs.originalSides['bottom'] - attrs.originalSides['top'];
-		var ol = attrs.originalSides['left'],
-		    ot = attrs.originalSides['top'],
-		    ob = attrs.originalSides['bottom'],
-		    or = attrs.originalSides['right'];
 		var rectangle = NSBezierPath.bezierPath();
-		rectangle.moveToPoint(NSMakePoint( m[0] * ol + m[3] * ot + m[6], m[1] * ol + m[4] * ot + m[7] ));
-		rectangle.lineToPoint(NSMakePoint( m[0] * or + m[3] * ot + m[6], m[1] * or + m[4] * ot + m[7] ));
-		rectangle.lineToPoint(NSMakePoint( m[0] * or + m[3] * ob + m[6], m[1] * or + m[4] * ob + m[7] ));
-		rectangle.lineToPoint(NSMakePoint( m[0] * ol + m[3] * ob + m[6], m[1] * ol + m[4] * ob + m[7] ));
+
+		// a d g b e h c f i
+		// 0 1 2 3 4 5 6 7 8
+		// u = (x*a + y*b + c) / (x*g + y*h + 1)
+		// v = (x*d + y*e + f) / (x*g + y*h + 1)
+		// X1 = x1 * a + y1 * b + c − x1 * g * X1 − y1 * h * X1
+		// Y1 = x1 * d + y1 * e + f − x1 * g * Y1 − y1 * h * Y1
+
+		var vector = [];
+		vector.push(( ol * m[0] + ot * m[3] + m[6] ) / ( or * m[2] + ot * m[5] + m[8] ));
+		vector.push(( ol * m[1] + ot * m[4] + m[7] ) / ( or * m[2] + ot * m[5] + m[8] ));
+		vector.push(( or * m[0] + ot * m[3] + m[6] ) / ( or * m[2] + ot * m[5] + m[8] ));
+		vector.push(( or * m[1] + ot * m[4] + m[7] ) / ( or * m[2] + ot * m[5] + m[8] ));
+		vector.push(( or * m[0] + ob * m[3] + m[6] ) / ( or * m[2] + ob * m[5] + m[8] ));
+		vector.push(( or * m[1] + ob * m[4] + m[7] ) / ( or * m[2] + ob * m[5] + m[8] ));
+		vector.push(( ol * m[0] + ob * m[3] + m[6] ) / ( ol * m[2] + ob * m[5] + m[8] ));
+		vector.push(( ol * m[1] + ob * m[4] + m[7] ) / ( ol * m[2] + ob * m[5] + m[8] ));
+
+		var matrix = [];
+		matrix.push( ol * m[0] + ot * m[3] + m[6] - ol * m[2] * vector[0] - ot * m[5] * vector[0] );
+		matrix.push( ol * m[1] + ot * m[4] + m[7] - ol * m[2] * vector[1] - ot * m[5] * vector[1] );
+		matrix.push( or * m[0] + ot * m[3] + m[6] - or * m[2] * vector[2] - ot * m[5] * vector[2] );
+		matrix.push( or * m[1] + ot * m[4] + m[7] - or * m[2] * vector[3] - ot * m[5] * vector[3] );
+		matrix.push( or * m[0] + ob * m[3] + m[6] - or * m[2] * vector[4] - ob * m[5] * vector[4] );
+		matrix.push( or * m[1] + ob * m[4] + m[7] - or * m[2] * vector[5] - ob * m[5] * vector[5] );
+		matrix.push( ol * m[0] + ob * m[3] + m[6] - ol * m[2] * vector[6] - ob * m[5] * vector[6] );
+		matrix.push( ol * m[1] + ob * m[4] + m[7] - ol * m[2] * vector[7] - ob * m[5] * vector[7] );
+
+		rectangle.moveToPoint( NSMakePoint( matrix[0] / m[8], matrix[1] / m[8] ));
+		rectangle.lineToPoint( NSMakePoint( matrix[2] / m[8], matrix[3] / m[8] ));
+		rectangle.lineToPoint( NSMakePoint( matrix[4] / m[8], matrix[5] / m[8] ));
+		rectangle.lineToPoint( NSMakePoint( matrix[6] / m[8], matrix[7] / m[8] ));
 		rectangle.closePath();
-		log( rectangle.treeAsDictionary() );
 
 		var shape = MSShapeGroup.shapeWithBezierPath( rectangle );
 		for (var i = 0; i < shape.layers().firstObject().path().points().length(); i++) {
-			shape.layers().firstObject().path().points().objectAtIndex( i ).setCornerRadius( attrs.radius );
+			shape.layers().firstObject().path().points().objectAtIndex( i ).setCornerRadius( attrs.radius * m[8] );
 		}
 	} else {
 		var rectangle = MSRectangleShape.new();
-
 		rectangle = setFrame( rectangle, attrs, ( isMask ? parent : false ) );
 
 		var shape = MSShapeGroup.shapeWithPath( rectangle );
-		shape.layers().firstObject().cornerRadiusFloat = attrs.radius;
-		// shape.layers().firstObject().cornerRadiusString = "7/0/0/10";
+		shape.layers().firstObject().cornerRadiusFloat = attrs.radius * m[0];
 	}
 	parent.addLayers( [shape] );
 
