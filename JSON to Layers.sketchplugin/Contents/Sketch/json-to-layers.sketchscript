@@ -593,22 +593,31 @@ function createText( parent, attrs, isMask ) {
 		textPart.push( textPart[i] + attrs.textRuns[i].characters.length );
 	}
 
+	text.usesNewLineSpacingBehaviour = 1;
 	if ( 1 < textPartNum ) {
 		for ( var i = 0; i < textPartNum; i++ ) {
 			var range = NSMakeRange( textPart[i], textPart[i + 1] - textPart[i] );
 			var textFont = NSFont.fontWithName_size_( attrs.textRuns[i].face, attrs.textRuns[i].size );
 			var color = hexToColor( attrs.textRuns[i].fillColor );
+			var pragraph = NSMutableParagraphStyle.new()
+			pragraph.minimumLineHeight = attrs.textRuns[i].leading;
+			pragraph.maximumLineHeight = attrs.textRuns[i].leading;
 
 			text.setIsEditingText( true );
-			text.addAttribute_value_forRange( NSFontAttributeName, textFont, range );
-			text.addAttribute_value_forRange( NSForegroundColorAttributeName, color, range );
+			text.addAttribute_value_forRange_( NSFontAttributeName, textFont, range );
+			text.addAttribute_value_forRange_( NSForegroundColorAttributeName, color, range );
+			text.addAttribute_value_forRange_( NSParagraphStyleAttributeName, pragraph, range );
 			text.setIsEditingText( false );
 		}
 	} else {
 		text.fontSize           = attrs.fontSize;
-		text.lineSpacing        = attrs.leading;
 		text.fontPostscriptName = attrs.fontFace;
 		text.textColor          = MSColor.colorWithSVGString( attrs.fillColor );
+
+		var pragraph = NSMutableParagraphStyle.new()
+		pragraph.minimumLineHeight = attrs.leading;
+		pragraph.maximumLineHeight = attrs.leading;
+		text.addAttribute_value_( NSParagraphStyleAttributeName, pragraph );
 	}
 	
 	switch ( attrs.alignment ) {
@@ -793,7 +802,7 @@ function addSymbol( parent, attrs, symbolIndex ) {
 	shape.frame().y = attrs.top;
 	parent.addLayers( [shape] );
 	// doc.reloadInspector();
-	
+
 	return shape;
 }
 
