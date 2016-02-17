@@ -31,3 +31,5 @@ fw2json.appVer.full = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFB
 fw2json.appVer.major    = ( fw2json.appVer.full.split( '.' ) )[0];
 fw2json.appVer.minor    = ( fw2json.appVer.full.split( '.' ) )[1];
 fw2json.appVer.revision = ( fw2json.appVer.full.split( '.' ) )[2] || 0;
+
+fw2json.symbols = []

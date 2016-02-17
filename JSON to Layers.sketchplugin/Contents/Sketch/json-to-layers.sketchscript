@@ -1,8 +1,13 @@
 @import 'lib/const.js';
 
+fw2json.init = function ( doc ) {
+	this.doc = doc;
+}
+
 var onRun = function ( context ) {
 	log( 'Start Proccessing ------------------------------------------' );
-	var doc = context.document;
+	fw2json.init( context.document );
+	var doc = fw2json.doc;
 	var currentPage = doc.currentPage();
 
 	// var userJSON = [doc askForUserInput:"Paste your JSON here:" initialValue:""];
@@ -124,14 +129,24 @@ function createElements( parent, elems, isMask ) {
 			}
 		}
 		if ( 'symbol' == elemsType ) {
-			log( '     Type: Layer Group' );
-			var shape = createGroup( parent, elems[i] );
-			addContextSettings( shape, elems[i] );
-			createElements( shape, elems[i].elements );
-			if ( 5 < fw2json.appVer.minor ) {
-				shape.resizeRoot( false );
+			log( '     Type: Layer Group - Symbol' );
+			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
+
+			var registeredSymbol = false;
+			var slc = 0;
+			for ( slc = fw2json.symbols.length - 1; slc >= 0; slc-- ) {
+				if ( fw2json.symbols[slc].fwSymbolID == elems[i].symbolID
+				     && fw2json.symbols[slc].width   == elems[i].width
+				     && fw2json.symbols[slc].height  == elems[i].height
+				) {
+					registeredSymbol = true;
+					break;
+				}
+			}
+			if ( registeredSymbol ) {
+				var shape = addSymbol( tempParent, elems[i], slc );
 			} else {
-				shape.resizeToFitChildrenWithOption( false );
+				var shape = createSymbol( tempParent, elems[i] );
 			}
 		}
 		if ( null != elems[i].effectList ) {
@@ -738,6 +753,47 @@ function addBezier( parent, attrs, isMask ) {
 	}
 	var shape = MSShapeGroup.shapeWithBezierPath( bezierLine );
 
+	return shape;
+}
+
+function createSymbol( parent, attrs ) {
+
+	log( '           Create Symbol' );
+	var shape = createGroup( parent, attrs );
+	addContextSettings( shape, attrs );
+	createElements( shape, attrs.elements );
+	if ( 5 < fw2json.appVer.minor ) {
+		shape.resizeRoot( false );
+	} else {
+		shape.resizeToFitChildrenWithOption( false );
+	}
+
+	var symbols = fw2json.doc.documentData().layerSymbols();
+	symbols.addSymbolWithName_firstInstance( shape.name(), shape );
+	var shape = parent.layers().objectAtIndex( parent.layers().count() - 1 );
+
+	fw2json.symbols.push( 
+		{ 
+			fwSymbolID: attrs.symbolID,
+			width: shape.frame().width(), 
+			height: shape.frame().height(),
+			symbolID: shape.sharedObjectID()
+		}
+	);
+
+	return shape;
+}
+
+function addSymbol( parent, attrs, symbolIndex ) {
+	log( '           Exist Symbol' );
+	var symbol = fw2json.doc.documentData().layerSymbols().symbolAtIndex( symbolIndex );
+	var shape = symbol.newInstance();
+	shape.setName( attrs.name );
+	shape.frame().x = attrs.left;
+	shape.frame().y = attrs.top;
+	parent.addLayers( [shape] );
+	// doc.reloadInspector();
+	
 	return shape;
 }
 
