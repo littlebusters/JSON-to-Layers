@@ -324,7 +324,7 @@ function addEffects( shape, attrs ) {
 				var effect = shape.style().shadows().addNewStylePart();
 				effect.blurRadius = 0;
 				
-				var coord = getCoordfromTrigFunc( j, attrs[i].angle );
+				var coord = getCoordfromTrigFunc( attrs[i].distance, attrs[i].angle );
 				effect.offsetX = coord.x;
 				effect.offsetY = coord.y;
 				effect.spread = 0;
