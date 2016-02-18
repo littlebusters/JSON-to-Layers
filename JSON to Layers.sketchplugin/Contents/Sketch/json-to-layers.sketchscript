@@ -374,7 +374,7 @@ function addEffects( shape, attrs ) {
 			// log( '  PsLE:' );
 			for ( var j = fw2json.PsLE.length - 1; j >= 0; j-- ) {
 				// log( '    Flag: ' + fw2json.PsLE[j] + ': ' + attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) );
-				if( '1' == attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) ) {
+				if( attrs[i][fw2json.PsLE[j]] && '1' == attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) ) {
 					// log( '      isEnabled:' );
 					var psleAttrs = attrs[i][fw2json.PsLE[j]].split( '&' );
 					// log( '      psleAttrs:' );
