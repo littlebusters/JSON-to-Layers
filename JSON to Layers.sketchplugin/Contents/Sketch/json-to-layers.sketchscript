@@ -817,15 +817,15 @@ function addGuideline ( parent, guides, grid ) {
 	var hRuler = parent.horizontalRulerData();
 
 	// set origin
-	vRuler.setBase( grid.x );
-	hRuler.setBase( grid.y );
+	hRuler.setBase( grid.x );
+	vRuler.setBase( grid.y );
 
 	// set guidelines
 	for ( var i in guides.x ) {
-		vRuler.addGuideWithValue( guides.x[i] );
+		hRuler.addGuideWithValue( guides.x[i] );
 	}
 	for ( var i in guides.y ) {
-		hRuler.addGuideWithValue( guides.y[i] );
+		vRuler.addGuideWithValue( guides.y[i] );
 	}
 }
 
