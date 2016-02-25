@@ -213,7 +213,7 @@ function addPathAttributes( shape, attrs ) {
 		if ( 0 < attrs.fill.textureBlend && attrs.fillTexture.filePath ) {
 			addTextureFill( shape, attrs );
 		} else if ( 0 < attrs.fill.textureBlend ) {
-			shape.name() = shape.name() + '-texture not found'
+			shape.name = shape.name() + ' [texture not found]';
 		}
 	}
 
@@ -774,7 +774,7 @@ function addBezier( parent, attrs, isMask ) {
 
 function createSymbol( parent, attrs ) {
 	log( '           Create Symbol' );
-	
+
 	var shape = createGroup( parent, attrs );
 	shape.setName( attrs.symbolName );
 	addContextSettings( shape, attrs );
