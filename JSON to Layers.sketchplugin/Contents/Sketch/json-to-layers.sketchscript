@@ -208,6 +208,12 @@ function addPathAttributes( shape, attrs ) {
 			color.alpha = getOpacity( attrs.fillColor );
 			fill.color = color;
 		}
+
+		if ( 0 < attrs.fill.textureBlend && attrs.fillTexture.filePath ) {
+			addTextureFill( shape, attrs );
+		} else if ( 0 < attrs.fill.textureBlend ) {
+			shape.name() = shape.name() + '-texture not found'
+		}
 	}
 
 	if ( null != attrs.brush ) {
