@@ -28,6 +28,7 @@ var onRun = function ( context ) {
 		var filePath = openPanel.URL().path();
 		var fwJSON = JSON.parse( NSString.stringWithContentsOfFile( filePath ) ); 
 		log( 'Open File from: ' + filePath );
+		fw2json.orgSymbols = fwJSON.symbols;
 	} else {
 		return false;
 	}
@@ -772,11 +773,12 @@ function addBezier( parent, attrs, isMask ) {
 }
 
 function createSymbol( parent, attrs ) {
-
 	log( '           Create Symbol' );
+	
 	var shape = createGroup( parent, attrs );
+	shape.setName( attrs.symbolName );
 	addContextSettings( shape, attrs );
-	createElements( shape, attrs.elements );
+	createElements( shape, fw2json.orgSymbols[attrs.elements].elements );
 	if ( 5 > fw2json.appVer.minor ) {
 		shape.resizeRoot( false );
 	} else {
@@ -784,14 +786,17 @@ function createSymbol( parent, attrs ) {
 	}
 
 	var symbols = fw2json.doc.documentData().layerSymbols();
-	symbols.addSymbolWithName_firstInstance( shape.name(), shape );
+	symbols.addSymbolWithName_firstInstance( attrs.symbolName, shape );
+
 	var shape = parent.layers().objectAtIndex( parent.layers().count() - 1 );
+	shape.frame().x = attrs.left;
+	shape.frame().y = attrs.top;
 
 	fw2json.symbols.push( 
 		{ 
 			fwSymbolID: attrs.symbolID,
-			width: shape.frame().width(), 
-			height: shape.frame().height(),
+			width: attrs.width, 
+			height: attrs.height,
 			symbolID: shape.sharedObjectID()
 		}
 	);
@@ -833,6 +838,26 @@ function addGuideline ( parent, guides, grid ) {
 	for ( var i in guides.y ) {
 		vRuler.addGuideWithValue( guides.y[i] );
 	}
+}
+
+function addTextureFill( shape, attrs ) {
+	log( attrs );
+	var filePath = NSImage.new().initWithContentsOfFile( attrs.fillTexture.filePath.replace( "file:///Macintosh%20HD/", "/" ) );
+	var textureFill = shape.style().fills().addNewStylePart();
+	
+	textureFill.setFillType( 4 );
+	textureFill.setPatternFillType( 0 );
+
+	if ( 5 > fw2json.appVer.minor ) {
+		var fillCollection = textureFill.documentData().images();
+		textureFill.setPatternImage_collection_( filePath, fillCollection );
+	} else {
+		textureFill.setPatternImage( filePath );
+	}
+
+	var contextSettings = textureFill.contextSettings();
+	contextSettings.opacity = attrs.fill.textureBlend / 100;
+	contextSettings.blendMode = fw2json.blendMode['screen'];
 }
 
 function addPatternFill( shape, attrs ) {
