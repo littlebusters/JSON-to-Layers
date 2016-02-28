@@ -67,10 +67,13 @@ var onRun = function ( context ) {
 function createElements( parent, elems, isMask ) {
 	log( '-> Child Layer Proccessing' );
 	if ( !isMask ) isMask = false;
-	// var shape;
+
 	for ( var i = elems.length - 1; i >= 0; i-- ) {
 		log( '  -> Proccessing: ' + elems[i].name + ' / ' + elems[i].type );
 		var elemsType = elems[i].type;
+		var hasMask = ( null != elems[i].mask ) ? true : false;
+		var actualParent = ( hasMask ) ? createMask( parent, elems[i] ) : parent;
+
 		if ( 'layer' == elemsType && elems[i].hasChildren ) {
 			log( '     Type: Layer' );
 			shape = createGroup( parent, elems[i], true );
@@ -83,19 +86,18 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'text' == elemsType ) {
 			log( '     Type: Text: ' + elems[i].textChars );
-			var shape = createText( parent, elems[i], isMask );
+			var shape = createText( actualParent, elems[i], isMask );
 			shape.setName( elems[i].textChars );
 		}
 		if ( 'bitmap' == elemsType ) {
 			log( '     Type: Bitmap' );
-			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
-			var shape = importBitmap( tempParent, elems[i], isMask );
+			var shape = importBitmap( actualParent, elems[i], isMask );
 			addContextSettings( shape, elems[i] );
 		}
 		if ( 'rectangle' == elemsType ) {
 			log( '     Type: Rectangle' );
-			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
-			var shape = createRectangle( tempParent, elems[i], isMask );
+			var shape = createRectangle( actualParent, elems[i], isMask );
+
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
 			if ( !isMask ) {
@@ -104,25 +106,25 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'path' == elemsType ) {
 			log( '     Type: Bezier Path' );
-			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
-			var shape = addBezier( tempParent, elems[i].bezierPath, isMask );
+			var shape = addBezier( actualParent, elems[i].bezierPath, isMask );
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
-			tempParent.addLayers( [shape] );
+			actualParent.addLayers( [shape] );
+			
 			if ( !isMask ) {
 				addPathAttributes( shape, elems[i].pathAttributes );
 			}
 		}
 		if ( 'slice' == elemsType ) {
 			log( '     Type: Slice' );
-			var shape = createSlice( parent, elems[i], isMask );
+			var shape = createSlice( actualParent, elems[i], isMask );
 		}
 		if ( 'group' == elemsType ) {
 			log( '     Type: Layer Group' );
-			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
-			var shape = createGroup( tempParent, elems[i], isMask );
+			var shape = createGroup( actualParent, elems[i], isMask );
 			addContextSettings( shape, elems[i] );
 			createElements( shape, elems[i].elements );
+
 			if ( 5 > fw2json.appVer.minor ) {
 				shape.resizeRoot( false );
 			} else {
@@ -131,7 +133,6 @@ function createElements( parent, elems, isMask ) {
 		}
 		if ( 'symbol' == elemsType ) {
 			log( '     Type: Layer Group - Symbol' );
-			var tempParent = ( null != elems[i].mask ) ? createMask( parent, elems[i] ) : parent;
 
 			var registeredSymbol = false;
 			var slc = 0;
@@ -145,16 +146,21 @@ function createElements( parent, elems, isMask ) {
 				}
 			}
 			if ( registeredSymbol ) {
-				var shape = addSymbol( tempParent, elems[i], slc );
+				var shape = addSymbol( actualParent, elems[i], slc );
 			} else {
-				var shape = createSymbol( tempParent, elems[i] );
+				var shape = createSymbol( actualParent, elems[i] );
 			}
 		}
 		if ( null != elems[i].effectList ) {
 			addEffects( shape, elems[i].effectList.effects );
 		}
-		if ( null != elems[i].mask ) {
-			// parent.resizeRoot( true );
+
+		if ( hasMask ) {
+			if ( 5 > fw2json.appVer.minor ) {
+				actualParent.resizeRoot( false );
+			} else {
+				actualParent.resizeToFitChildrenWithOption( false );
+			}
 		}
 		shape.isLocked = elems[i].locked;
 		shape.isVisible = elems[i].visible;
@@ -186,17 +192,33 @@ function setFrame( targetLayer, attrs, parent ) {
 	// log( parent );
 	// log( parent.absoluteRect() );
 	// log( parent.frame() );
-	var offsetX = parent ? parent.absoluteRect().x() : 0;
-	var offsetY = parent ? parent.absoluteRect().y() : 0;
-	targetLayer.frame().x = attrs.left - offsetX;// - parent.absoluteRect().x();
-	targetLayer.frame().y = attrs.top  - offsetY;// - parent.absoluteRect().y();
+	var offsetX2 = parent ? parent.absoluteRect().x() : 0;
+	var offsetY2 = parent ? parent.absoluteRect().y() : 0;
+	var offsetX = parent ? parent.frame().x() : 0;
+	var offsetY = parent ? parent.frame().y() : 0;
+	log( attrs );
+	log( '        offset: X:' + offsetX + ' / ' + offsetX2 + ', Y: ' + offsetY + ' / ' + offsetY2 );
+	log( '        attrs: x:' + attrs.left + ', Y: ' + attrs.top );
+	if ( targetLayer.parentObject()
+		&& targetLayer.parentObject().length()
+		&& targetLayer.parentObject().firstObject().hasClippingMask() ) {
+		offsetX = targetLayer.parentObject().parentObject().frame().x();
+		offsetY = targetLayer.parentObject().parentObject().frame().y();
+		targetLayer.frame().x = attrs.left - offsetX;
+		targetLayer.frame().y = attrs.top  - offsetY;
+	} else {
+		targetLayer.frame().x = attrs.left - offsetX;
+		targetLayer.frame().y = attrs.top  - offsetY;
+	}
 	targetLayer.frame().width = attrs.width;
 	targetLayer.frame().height = attrs.height;
+	log( targetLayer.treeAsDictionary() );
+	log( '     finish setFrame() <-' );
 
 	return targetLayer;
 }
 
-function addPathAttributes( shape, attrs ) {
+function addPathAttributes( shape, attrs, maskFlag ) {
 	if ( null != attrs.fill ) {
 		var fill = shape.style().fills().addNewStylePart();
 
@@ -559,25 +581,27 @@ function importBitmap( parent, attrs, isMask ) {
 
 function createMask( parent, attrs ) {
 	log( '    -> createMask' );
-	// log( attrs );
+
 	var maskGroup = parent.addLayerOfType( 'group' );
 	maskGroup.setName( attrs.name );
+
 	var mask = createElements( maskGroup, attrs.mask.element, true );
 	log( '     Mask Object: ' + mask.frame() );
 	mask.setHasClippingMask( true );
-	if ( 'mask to path' == attrs.mask.mode) {
+
+	if ( 'mask to path' == attrs.mask.mode ) {
 		mask.clippingMaskMode = 0; // Outline
 	} else {
 		mask.clippingMaskMode = 1; // Alpha
 	}
-	// log( '!!! resizeRoot()');
-	// parent.resizeRoot( false );
 
 	return maskGroup;
 }
 
 function createGroup( parent, attrs, _isLayer ) {
-	var isLayer = _isLayer || false;
+	log( '    -> createGroup' );
+
+	var isLayer = _isLayer || false;	
 	var group = parent.addLayerOfType( 'group' );
 	group.setName( attrs.name || attrs.name );
 	group.hasClickThrough = ( isLayer ) ? 1 : 0;
@@ -709,14 +733,20 @@ function createRectangle( parent, attrs, isMask ) {
 		for (var i = 0; i < shape.layers().firstObject().path().points().length(); i++) {
 			shape.layers().firstObject().path().points().objectAtIndex( i ).setCornerRadius( attrs.radius * m[8] );
 		}
+		parent.addLayers( [shape] );
 	} else {
 		var rectangle = MSRectangleShape.new();
-		rectangle = setFrame( rectangle, attrs, ( isMask ? parent : false ) );
-
+		rectangle.frame().width = attrs.width;
+		rectangle.frame().height = attrs.height;
 		var shape = MSShapeGroup.shapeWithPath( rectangle );
+		var offsetX = ( 'MSLayerGroup' == parent.class() ) ? parent.frame().x() : 0;
+		var offsetY = ( 'MSLayerGroup' == parent.class() ) ? parent.frame().y() : 0;
+		shape.frame().x = attrs.left - offsetX;
+		shape.frame().y = attrs.top - offsetY;
+		parent.addLayers( [shape] );
 		shape.layers().firstObject().cornerRadiusFloat = attrs.radius * m[0];
 	}
-	parent.addLayers( [shape] );
+	// parent.addLayers( [shape] );
 
 	return shape;
 }
