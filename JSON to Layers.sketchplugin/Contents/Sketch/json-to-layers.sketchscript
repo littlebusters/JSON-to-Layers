@@ -228,6 +228,8 @@ function addPathAttributes( shape, attrs, maskMode ) {
 			color.alpha = getOpacity( attrs.fillColor );
 			fill.color = color;
 		}
+		if ( 'mask to path' == maskMode ) shape.style().fills().firstObject().isEnabled = false;
+		if ( 'mask to image' == maskMode ) convertFilltoAlpha( shape, attrs.fillType );
 
 		if ( 0 < attrs.fill.textureBlend && attrs.fillTexture.filePath && !maskMode ) {
 			addTextureFill( shape, attrs );
@@ -240,9 +242,6 @@ function addPathAttributes( shape, attrs, maskMode ) {
 		addBorder( shape, attrs );
 
 		if ( 'mask to path' == maskMode ) shape.style().borders().firstObject().isEnabled = false;
-	}
-}
-
 	}
 }
 
@@ -1032,6 +1031,29 @@ function addGradientFill( shape, pathAttrs ) {
 		var endX = ( pathAttrs.fillHandle2.x - shapeX ) / shapeW;
 		var endY = ( pathAttrs.fillHandle2.y - shapeY ) / shapeH;
 		gradient.setPoint_atIndex_( CGPointMake( endX, endY ), orignPoint - 1 );
+	}
+}
+
+function convertFilltoAlpha( shape, fillType ) {
+	switch ( fillType ) {
+		case 'gradient':
+			var gradient = shape.style().fills().firstObject().gradient();
+			for ( var i = 0; i < gradient.stops().length(); i++ ) {
+				var color = MSColor.colorWithSVGString( '#' + gradient.stops().objectAtIndex(i).color().hexValue().toString() );
+				color.alpha = gradient.stops().objectAtIndex(i).color().alpha() * gray2Alpha( gradient.stops().objectAtIndex(i).color().hexValue().toString() );
+				gradient.setColor_atIndex_( color, i );
+			}
+			break;
+		case 'flat':
+			var fill = shape.style().fills().firstObject();
+			var color = MSColor.colorWithSVGString( '#' + fill.color().hexValue().toString() );
+			color.alpha = gray2Alpha( fill.color().hexValue().toString() );
+			fill.setFillType( 1 );
+			var gradient = fill.gradient();
+			for ( var i = 0; i < fill.gradient().stops().length(); i++ ) {
+				gradient.setColor_atIndex_( color, i );
+			}
+			break;
 	}
 }
 
