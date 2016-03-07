@@ -632,7 +632,7 @@ function createText( parent, attrs, isMask ) {
 		for ( var i = 0; i < textPartNum; i++ ) {
 			var range = NSMakeRange( textPart[i], textPart[i + 1] - textPart[i] );
 			var textFont = NSFont.fontWithName_size_( attrs.textRuns[i].face, attrs.textRuns[i].size );
-			var color = hexToColor( attrs.textRuns[i].fillColor );
+			var color = hex2Color( attrs.textRuns[i].fillColor );
 			var pragraph = NSMutableParagraphStyle.new()
 			pragraph.minimumLineHeight = attrs.textRuns[i].leading;
 			pragraph.maximumLineHeight = attrs.textRuns[i].leading;
@@ -1134,11 +1134,11 @@ function getOpacity( color ) {
 	return opacity;
 }
 
-function hexToColor ( hex ) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex),
-        red = parseInt(result[1], 16) / 255,
-        green = parseInt(result[2], 16) / 255,
-        blue = parseInt(result[3], 16) / 255,
-        alpha = getOpacity( hex );
+function hex2Color ( hex ) {
+	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec( hex ),
+		red   = parseInt(result[1], 16) / 255,
+		green = parseInt(result[2], 16) / 255,
+		blue  = parseInt(result[3], 16) / 255,
+		alpha = getOpacity( hex );
     return NSColor.colorWithCalibratedRed_green_blue_alpha( red, green, blue, alpha )
 }
