@@ -1142,3 +1142,27 @@ function hex2Color ( hex ) {
 		alpha = getOpacity( hex );
     return NSColor.colorWithCalibratedRed_green_blue_alpha( red, green, blue, alpha )
 }
+
+function rgb2Gray ( hex ) {
+	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec( hex ),
+		red   = hex2Digit( parseInt( result[1], 16 )) - 0,
+		green = hex2Digit( parseInt( result[2], 16 )) - 0,
+		blue  = hex2Digit( parseInt( result[3], 16 )) - 0;
+	var gray  = digit2Hex(( Math.round( red + green + blue ) / 3 ));
+	return '#' + gray + gray + gray;
+}
+
+function gray2Alpha ( hex ) {
+	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec( hex ),
+		red   = parseInt( result[1], 16 ),
+		green = parseInt( result[2], 16 ),
+		blue  = parseInt( result[3], 16 );
+
+	if ( red != green || green != blue ) {
+		hex = rgb2Gray( hex );
+		result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec( hex );
+	}
+
+	var grayPercent = hex2Digit( result[1] ) - 0;
+	return bit2Percent( grayPercent );
+}
