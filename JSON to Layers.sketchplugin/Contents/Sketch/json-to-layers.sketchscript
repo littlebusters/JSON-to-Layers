@@ -100,9 +100,7 @@ function createElements( parent, elems, isMask ) {
 
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
-			if ( !isMask ) {
-				addPathAttributes( shape, elems[i].pathAttributes );
-			}
+			addPathAttributes( shape, elems[i].pathAttributes, isMask );
 		}
 		if ( 'path' == elemsType ) {
 			log( '     Type: Bezier Path' );
@@ -110,10 +108,7 @@ function createElements( parent, elems, isMask ) {
 			shape.setName( elems[i].name );
 			addContextSettings( shape, elems[i] );
 			actualParent.addLayers( [shape] );
-			
-			if ( !isMask ) {
-				addPathAttributes( shape, elems[i].pathAttributes );
-			}
+			addPathAttributes( shape, elems[i].pathAttributes, isMask );
 		}
 		if ( 'slice' == elemsType ) {
 			log( '     Type: Slice' );
@@ -218,7 +213,9 @@ function setFrame( targetLayer, attrs, parent ) {
 	return targetLayer;
 }
 
-function addPathAttributes( shape, attrs, maskFlag ) {
+function addPathAttributes( shape, attrs, maskMode ) {
+	maskMode = maskMode || false;
+
 	if ( null != attrs.fill ) {
 		var fill = shape.style().fills().addNewStylePart();
 
@@ -232,15 +229,20 @@ function addPathAttributes( shape, attrs, maskFlag ) {
 			fill.color = color;
 		}
 
-		if ( 0 < attrs.fill.textureBlend && attrs.fillTexture.filePath ) {
+		if ( 0 < attrs.fill.textureBlend && attrs.fillTexture.filePath && !maskMode ) {
 			addTextureFill( shape, attrs );
-		} else if ( 0 < attrs.fill.textureBlend ) {
+		} else if ( 0 < attrs.fill.textureBlend && !maskMode ) {
 			shape.name = shape.name() + ' [texture not found]';
 		}
 	}
 
 	if ( null != attrs.brush ) {
 		addBorder( shape, attrs );
+
+		if ( 'mask to path' == maskMode ) shape.style().borders().firstObject().isEnabled = false;
+	}
+}
+
 	}
 }
 
@@ -585,8 +587,9 @@ function createMask( parent, attrs ) {
 	var maskGroup = parent.addLayerOfType( 'group' );
 	maskGroup.setName( attrs.name );
 
-	var mask = createElements( maskGroup, attrs.mask.element, true );
+	var mask = createElements( maskGroup, attrs.mask.element, attrs.mask.mode );
 	log( '     Mask Object: ' + mask.frame() );
+
 	mask.setHasClippingMask( true );
 
 	if ( 'mask to path' == attrs.mask.mode ) {
