@@ -74,78 +74,89 @@ function createElements( parent, elems, isMask ) {
 		var hasMask = ( null != elems[i].mask ) ? true : false;
 		var actualParent = ( hasMask ) ? createMask( parent, elems[i] ) : parent;
 
-		if ( 'layer' == elemsType && elems[i].hasChildren ) {
-			log( '     Type: Layer' );
-			shape = createGroup( parent, elems[i], true );
-			createElements( shape, elems[i].elems );
-			if ( 5 > fw2json.appVer.minor ) {
-				shape.resizeRoot( false );
-			} else {
-				shape.resizeToFitChildrenWithOption( false );
-			}
-		}
-		if ( 'text' == elemsType ) {
-			log( '     Type: Text: ' + elems[i].textChars );
-			var shape = createText( actualParent, elems[i], isMask );
-			shape.setName( elems[i].textChars );
-		}
-		if ( 'bitmap' == elemsType ) {
-			log( '     Type: Bitmap' );
-			var shape = importBitmap( actualParent, elems[i], isMask );
-			addContextSettings( shape, elems[i] );
-		}
-		if ( 'rectangle' == elemsType ) {
-			log( '     Type: Rectangle' );
-			var shape = createRectangle( actualParent, elems[i], isMask );
-
-			shape.setName( elems[i].name );
-			addContextSettings( shape, elems[i] );
-			addPathAttributes( shape, elems[i].pathAttributes, isMask );
-		}
-		if ( 'path' == elemsType ) {
-			log( '     Type: Bezier Path' );
-			var shape = addBezier( actualParent, elems[i].bezierPath, isMask );
-			shape.setName( elems[i].name );
-			addContextSettings( shape, elems[i] );
-			actualParent.addLayers( [shape] );
-			addPathAttributes( shape, elems[i].pathAttributes, isMask );
-		}
-		if ( 'slice' == elemsType ) {
-			log( '     Type: Slice' );
-			var shape = createSlice( actualParent, elems[i], isMask );
-		}
-		if ( 'group' == elemsType ) {
-			log( '     Type: Layer Group' );
-			var shape = createGroup( actualParent, elems[i], isMask );
-			addContextSettings( shape, elems[i] );
-			createElements( shape, elems[i].elements );
-
-			if ( 5 > fw2json.appVer.minor ) {
-				shape.resizeRoot( false );
-			} else {
-				shape.resizeToFitChildrenWithOption( false );
-			}
-		}
-		if ( 'symbol' == elemsType ) {
-			log( '     Type: Layer Group - Symbol' );
-
-			var registeredSymbol = false;
-			var slc = 0;
-			for ( slc = fw2json.symbols.length - 1; slc >= 0; slc-- ) {
-				if ( fw2json.symbols[slc].fwSymbolID == elems[i].symbolID
-				     && fw2json.symbols[slc].width   == elems[i].width
-				     && fw2json.symbols[slc].height  == elems[i].height
-				) {
-					registeredSymbol = true;
-					break;
+		switch ( elemsType ) {
+			case 'layer':
+				if ( elems[i].hasChildren ) {
+					log( '     Type: Layer' );
+					shape = createGroup( parent, elems[i], true );
+					createElements( shape, elems[i].elems );
+					if ( 5 > fw2json.appVer.minor ) {
+						shape.resizeRoot( false );
+					} else {
+						shape.resizeToFitChildrenWithOption( false );
+					}
 				}
+				break;
+
+			case 'text':
+				log( '     Type: Text: ' + elems[i].textChars );
+				var shape = createText( actualParent, elems[i], isMask );
+				shape.setName( elems[i].textChars );
+				break;
+
+			case 'bitmap':
+				log( '     Type: Bitmap' );
+				var shape = importBitmap( actualParent, elems[i], isMask );
+				addContextSettings( shape, elems[i] );
+				break;
+
+			case 'rectangle':
+				log( '     Type: Rectangle' );
+				var shape = createRectangle( actualParent, elems[i], isMask );
+
+				shape.setName( elems[i].name );
+				addContextSettings( shape, elems[i] );
+				addPathAttributes( shape, elems[i].pathAttributes, isMask );
+				break;
+
+			case 'path':
+				log( '     Type: Bezier Path' );
+				var shape = addBezier( actualParent, elems[i].bezierPath, isMask );
+				shape.setName( elems[i].name );
+				addContextSettings( shape, elems[i] );
+				actualParent.addLayers( [shape] );
+				addPathAttributes( shape, elems[i].pathAttributes, isMask );
+				break;
+
+			case 'slice':
+				log( '     Type: Slice' );
+				var shape = createSlice( actualParent, elems[i], isMask );
+				break;
+
+			case 'group':
+				log( '     Type: Layer Group' );
+				var shape = createGroup( actualParent, elems[i], isMask );
+				addContextSettings( shape, elems[i] );
+				createElements( shape, elems[i].elements );
+
+				if ( 5 > fw2json.appVer.minor ) {
+					shape.resizeRoot( false );
+				} else {
+					shape.resizeToFitChildrenWithOption( false );
+				}
+				break;
+
+			case 'symbol':
+				log( '     Type: Layer Group - Symbol' );
+				var registeredSymbol = false;
+				var slc = 0;
+				for ( slc = fw2json.symbols.length - 1; slc >= 0; slc-- ) {
+					if ( fw2json.symbols[slc].fwSymbolID == elems[i].symbolID
+					     && fw2json.symbols[slc].width   == elems[i].width
+					     && fw2json.symbols[slc].height  == elems[i].height
+					) {
+						registeredSymbol = true;
+						break;
+					}
+				}
+				if ( registeredSymbol ) {
+					var shape = addSymbol( actualParent, elems[i], slc );
+				} else {
+					var shape = createSymbol( actualParent, elems[i] );
+				}
+				break;
 			}
-			if ( registeredSymbol ) {
-				var shape = addSymbol( actualParent, elems[i], slc );
-			} else {
-				var shape = createSymbol( actualParent, elems[i] );
-			}
-		}
+
 		if ( null != elems[i].effectList ) {
 			addEffects( shape, elems[i].effectList.effects );
 		}
@@ -157,10 +168,11 @@ function createElements( parent, elems, isMask ) {
 				actualParent.resizeToFitChildrenWithOption( false );
 			}
 		}
+		
 		shape.isLocked = elems[i].locked;
 		shape.isVisible = elems[i].visible;
 	};
-	// parent.resizeRoot( true );
+
 	if ( !isMask ) {
 		log( '!!! Finished createElements !!!');
 		log( '!!! resizeRoot() to ' + parent.name() );
