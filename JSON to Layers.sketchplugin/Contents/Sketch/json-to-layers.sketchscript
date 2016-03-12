@@ -961,69 +961,78 @@ function addGradientFill( shape, pathAttrs ) {
 	// log( 'gradientNodes' );
 	// log( gradientNodes );
 
-	// get gradient attributes
+
+	var ci = 0, // color index
+	    oi = 0; // opacityNodes index
 	var optimazedPoints = [];
 	for ( var i = 0, index = 0; i < gradientNodes.length; i++ ) {
-		for ( var j = i; j < gradientNodes.length; j++ ) {
-			if ( !gradientNodes[i].isOpacityNode ) {
-				if ( gradientNodes[j].isOpacityNode && gradientNodes[i].position <= gradientNodes[j].position ) {
-					optimazedPoints[index] = {};
-					optimazedPoints[index].color = gradientNodes[i].color;
-					optimazedPoints[index].position = gradientNodes[i].position;
-					if ( 9 == gradientNodes[j].color.length ) {
-						var assets = {prev:{}, next:{}, current:{}};
-						assets.prev.position    = optimazedPoints[index - 1].position;
-						assets.prev.opacity     = optimazedPoints[index - 1].opacity;
-						assets.next.position    = gradientNodes[j].position;
-						assets.next.opacity     = getOpacityByDigit( gradientNodes[j].color.slice( 7, 9 ) );
-						assets.current.position = optimazedPoints[index].position;
-						optimazedPoints[index].opacity = getGradientOpacity( assets );
-					} else {
-						optimazedPoints[index].opacity = 1;
-					}
-					index++;
-					break;
-				}
-			} else if ( 0 < i && gradientNodes[i - 1].position != gradientNodes[i].position ) {
-				var gradientAssets = {prev:{}, next:{}, current:{}};
-
-				gradientAssets.prev.color    = optimazedPoints[index - 1].color;
-				gradientAssets.prev.position = optimazedPoints[index - 1].position;
-				gradientAssets.next.color    = optimazedPoints[index - 1].color;
-				gradientAssets.next.position = 1;
-
-				for ( var k = j; k < gradientNodes.length; k++ ) {
-					if ( !gradientNodes[k].isOpacityNode ) {
-						gradientAssets.next.color    = gradientNodes[k].color;
-						gradientAssets.next.position = gradientNodes[k].position;
-					} 
-				}
-
-				gradientAssets.current.position = gradientNodes[i].position;
-
-				optimazedPoints[index] = {};
-				optimazedPoints[index].color = getGradientStopColorOnOpacitySide( gradientAssets );
+		optimazedPoints[index] = {};
+		if ( gradientNodes.length == i + 1 ) {
+			optimazedPoints[index].position = gradientNodes[i].position;
+			if ( gradientNodes[i].isOpacityNode ) {
+				optimazedPoints[index].opacity  = getOpacityByDigit( gradientNodes[i].color.slice( 7, 9 ) );
+				optimazedPoints[index].color = optimazedPoints[index - 1].color;
+			} else {
+				optimazedPoints[index].opacity  = optimazedPoints[index - 1].opacity;
+				optimazedPoints[index].color    = gradientNodes[i].color;
+			}
+		} else if ( gradientNodes[i].position < gradientNodes[i + 1].position ) {
+			if ( gradientNodes[i].isOpacityNode ) {
 				optimazedPoints[index].position = gradientNodes[i].position;
-				if ( 9 == gradientNodes[i].color.length ) {
-					optimazedPoints[index].opacity = getOpacityByDigit( gradientNodes[i].color.slice( 7, 9 ) );
+				optimazedPoints[index].opacity  = getOpacityByDigit( gradientNodes[i].color.slice( 7, 9 ) );
+				if ( 0 == ci || gradientNodes.length == i + 1 ) {
+					optimazedPoints[index].color = attrs.nodes[ci].color;
 				} else {
-					optimazedPoints[index].opacity = 1;
+					var nodeColor;
+					var assets = {prev:{}, next:{}, current:{}};
+						assets.prev.position = attrs.nodes[ci - 1].position;
+						assets.prev.color  = attrs.nodes[ci - 1].color;
+						assets.next.position = attrs.nodes[ci].position;
+						assets.next.color  = attrs.nodes[ci].color;
+						assets.current.position = optimazedPoints[index].position;
+
+					optimazedPoints[index].color = getGradientStopColorOnOpacitySide( assets );
 				}
 				index++;
-				break;
+				oi++;
 			} else {
-				optimazedPoints[index] = {};
-				optimazedPoints[index].color = gradientNodes[j].color;
-				optimazedPoints[index].position = gradientNodes[j].position;
+				optimazedPoints[index].color    = gradientNodes[i].color;
+				optimazedPoints[index].position = gradientNodes[i].position;
+				if ( 0 == oi || gradientNodes.length == i + 1 ) {
+					var nodeOpacity = attrs.opacityNodes[ci].color.slice( 7, 9 );
+					optimazedPoints[index].opacity  = getOpacityByDigit( nodeOpacity );
+				} else {
+					var nodeOpacity;
+					var assets = {prev:{}, next:{}, current:{}};
+						assets.prev.position = attrs.opacityNodes[oi - 1].position;
+						nodeOpacity          = attrs.opacityNodes[oi - 1].color.slice( 7, 9 );
+						assets.prev.opacity  = getOpacityByDigit( nodeOpacity );
+						assets.next.position = attrs.opacityNodes[oi].position;
+						nodeOpacity          = attrs.opacityNodes[oi].color.slice( 7, 9 );
+						assets.next.opacity  = getOpacityByDigit( nodeOpacity );
+						assets.current.position = optimazedPoints[index].position;
+
+					optimazedPoints[index].opacity = getGradientOpacity( assets );
+				}
+				index++;
+				ci++;
 			}
+
+		} else if ( gradientNodes[i].position == gradientNodes[i + 1].position ) {
+			optimazedPoints[index].color    = gradientNodes[i].color;
+			optimazedPoints[index].position = gradientNodes[i].position;
+			optimazedPoints[index].opacity  = getOpacityByDigit( gradientNodes[i + 1].color.slice( 7, 9 ) );
+			index++;
+			i++;
+			ci++;
+			oi++;
 		}
 	}
-	// log( optimazedPoints );
 
 	var orignPoint = optimazedPoints.length;
 	for ( var i = 0; i < orignPoint; i++ ) {
 		if ( 0 != optimazedPoints[i].position && 1 != optimazedPoints[i].position ) {
-			gradient.addStopAtLength( floorWithDigit( optimazedPoints[i].position, 2 ) );
+			gradient.addStopAtLength( roundWithDigit( optimazedPoints[i].position, 2 ) );
 		}
 	}
 	for ( var i = 0; i < orignPoint; i++ ) {
@@ -1085,6 +1094,7 @@ function getCoordfromTrigFunc( radius, angle, isPsLE ) {
 }
 
 function getGradientStopColorOnOpacitySide ( assets ) {
+	// log( '    getGradientStopColorOnOpacitySide:');
 	// log( assets );
 
 	var pr = hex2Digit( assets.prev.color.slice( 1, 3 ) ) - 0;
@@ -1103,9 +1113,9 @@ function getGradientStopColorOnOpacitySide ( assets ) {
 	var localRangePosition = ( assets.current.position - assets.prev.position ) * offset;
 	// log( '    range: ' + range + ' / offset: ' + offset + ' / localRangePosition: ' + localRangePosition );
 	
-	var r = floorWithDigit( pr + ( nr - pr ) * localRangePosition, 0 );
-	var g = floorWithDigit( pg + ( ng - pg ) * localRangePosition, 0 );
-	var b = floorWithDigit( pb + ( nb - pb ) * localRangePosition, 0 );
+	var r = roundWithDigit( pr + ( nr - pr ) * localRangePosition, 0 );
+	var g = roundWithDigit( pg + ( ng - pg ) * localRangePosition, 0 );
+	var b = roundWithDigit( pb + ( nb - pb ) * localRangePosition, 0 );
 
 	r = digit2Hex( r );
 	g = digit2Hex( g );
@@ -1116,12 +1126,14 @@ function getGradientStopColorOnOpacitySide ( assets ) {
 }
 
 function getGradientOpacity ( assets ) {
+	// log( '    getGradientOpacity:');
+	// log( assets );
 
 	var range = assets.next.position - assets.prev.position;
 	var offset = 1 / range;
 	var localRangePosition = ( assets.current.position - assets.prev.position ) * offset;
 
-	var opacity = floorWithDigit( assets.prev.opacity + ( assets.next.opacity - assets.prev.opacity ) * localRangePosition, 2 );
+	var opacity = roundWithDigit( assets.prev.opacity + ( assets.next.opacity - assets.prev.opacity ) * localRangePosition, 2 );
 
 	return opacity;
 }
@@ -1133,10 +1145,21 @@ function floorWithDigit ( _val, _specifiedDigit ) {
 	return  val / digit;
 }
 
-function getOpacityByDigit ( _hex ) {
-	var digit = ( parseInt( '0x' + _hex ).toString( 10 ) ) / 255;
+function roundWithDigit ( _val, _specifiedDigit ) {
+	var digit = Math.pow( 10, _specifiedDigit );
+	var val = Math.round( _val * digit );
 
-	return floorWithDigit( digit, 2 );
+	return  val / digit;
+}
+
+function getOpacityByDigit ( _hex ) {
+	if ( _hex ) {
+		var digit = ( parseInt( '0x' + _hex ).toString( 10 ) ) / 255;
+	} else {
+		var digit = 1;
+	}
+
+	return roundWithDigit( digit, 2 );
 }
 
 function digit2Hex ( _digit ) {
@@ -1150,7 +1173,7 @@ function hex2Digit ( _hex ) {
 }
 
 function bit2Percent ( val ) {
-	return floorWithDigit( val / 255, 4 );
+	return roundWithDigit( val / 255, 4 );
 }
 
 function getHexColor( color ) {
@@ -1163,7 +1186,7 @@ function getOpacity( color ) {
 
 	var hex = color.slice( 7, 9 );
 	var opacity = parseInt( '0x' + hex ).toString( 10 ) / 255;
-	opacity = floorWithDigit( opacity, 2 );
+	opacity = roundWithDigit( opacity, 2 );
 
 	return opacity;
 }
