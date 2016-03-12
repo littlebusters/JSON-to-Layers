@@ -168,7 +168,7 @@ function createElements( parent, elems, isMask ) {
 				actualParent.resizeToFitChildrenWithOption( false );
 			}
 		}
-		
+
 		shape.isLocked = elems[i].locked;
 		shape.isVisible = elems[i].visible;
 	};
@@ -924,7 +924,6 @@ function addPatternFill( shape, attrs ) {
 function addGradientFill( shape, pathAttrs ) {
 	var shapeStyle = shape.style();
 	log( '>>> addGradientFill' );
-	log( shape.frame() );
 	// shapeStyle.fills().addNewStylePart();
 	var shapeFill = shapeStyle.fill();
 	shapeFill.setFillType( 1 ); // gradient fill
