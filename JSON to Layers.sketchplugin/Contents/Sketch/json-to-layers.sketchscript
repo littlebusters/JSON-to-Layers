@@ -625,7 +625,7 @@ function createGroup( parent, attrs, _isLayer ) {
 
 function createText( parent, attrs, isMask ) {
 	var text = parent.addLayerOfType( 'text' );
-	text = setFrame( text, attrs, ( isMask ? parent : false ) );
+	// text = setFrame( text, attrs, ( isMask ? parent : false ) );
 	if ( !attrs.autoExpand ) {
 		text.textBehaviour = 1;
 	}
@@ -664,6 +664,7 @@ function createText( parent, attrs, isMask ) {
 		pragraph.maximumLineHeight = attrs.leading;
 		text.addAttribute_value_( NSParagraphStyleAttributeName, pragraph );
 	}
+	text = setFrame( text, attrs, ( isMask ? parent : false ) );
 	
 	switch ( attrs.alignment ) {
 		case 'left':
@@ -679,6 +680,8 @@ function createText( parent, attrs, isMask ) {
 			text.setTextAlignment( 0 );
 			break;
 	}
+
+	applyRotation( text, attrs.transform.matrix[3] );
 	
 	return text;
 }
@@ -1074,6 +1077,14 @@ function convertFilltoAlpha( shape, fillType ) {
 				gradient.setColor_atIndex_( color, i );
 			}
 			break;
+	}
+}
+
+function applyRotation( shape, radian ) {
+	angle = roundWithDigit( 0 - radian * ( 180 / Math.PI ), 2 );
+	if ( 0 != angle ) {
+		angle = 360 - angle;
+		shape.rotation = angle;
 	}
 }
 
