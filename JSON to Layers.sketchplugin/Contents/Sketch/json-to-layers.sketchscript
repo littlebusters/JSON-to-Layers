@@ -29,6 +29,8 @@ var onRun = function ( context ) {
 		var fwJSON = JSON.parse( NSString.stringWithContentsOfFile( filePath ) ); 
 		log( 'Open File from: ' + filePath );
 		fw2json.orgSymbols = fwJSON.symbols;
+		fw2json.resPath.basePath    = openPanel.directoryURL().path();
+		fw2json.resPath.exportedDir = fwJSON.resExportedDir;
 	} else {
 		return false;
 	}
@@ -581,7 +583,8 @@ function addEffects( shape, attrs ) {
 
 function importBitmap( parent, attrs, isMask ) {
 	var filePath = attrs.uri;
-	filePath = filePath.replace( "file:///Macintosh%20HD/", "/" );
+	var splitPath = filePath.split( fw2json.resPath.basePath );
+	filePath = fw2json.resPath.basePath + splitPath[1];
 
 	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
 	bitmap = setFrame( bitmap, attrs, ( isMask ? parent : false ) );
@@ -888,8 +891,9 @@ function addGuideline ( parent, guides, grid ) {
 }
 
 function addTextureFill( shape, attrs ) {
-	log( attrs );
-	var filePath = NSImage.new().initWithContentsOfFile( attrs.fillTexture.filePath.replace( "file:///Macintosh%20HD/", "/" ) );
+	var splitPath = attrs.fillTexture.filePath.split( fw2json.resPath.basePath );
+	var filePath = fw2json.resPath.basePath + splitPath[1];
+	var texturePath = NSImage.new().initWithContentsOfFile( filePath );
 	var textureFill = shape.style().fills().addNewStylePart();
 	
 	textureFill.setFillType( 4 );
@@ -897,9 +901,9 @@ function addTextureFill( shape, attrs ) {
 
 	if ( 5 > fw2json.appVer.minor ) {
 		var fillCollection = textureFill.documentData().images();
-		textureFill.setPatternImage_collection_( filePath, fillCollection );
+		textureFill.setPatternImage_collection_( texturePath, fillCollection );
 	} else {
-		textureFill.setPatternImage( filePath );
+		textureFill.setPatternImage( texturePath );
 	}
 
 	var contextSettings = textureFill.contextSettings();
@@ -908,7 +912,9 @@ function addTextureFill( shape, attrs ) {
 }
 
 function addPatternFill( shape, attrs ) {
-	var filePath = NSImage.new().initWithContentsOfFile( attrs.replace( "file:///Macintosh%20HD/", "/" ) );
+	var splitPath = attrs.split( fw2json.resPath.basePath );
+	var filePath = fw2json.resPath.basePath + splitPath[1];
+	var patternPath = NSImage.new().initWithContentsOfFile( filePath );
 	var shapeStyle = shape.style();
 	var shapeFill = shapeStyle.fill();
 	
@@ -917,9 +923,9 @@ function addPatternFill( shape, attrs ) {
 
 	if ( 5 > fw2json.appVer.minor ) {
 		var fillCollection = shapeFill.documentData().images();
-		shapeFill.setPatternImage_collection_( filePath, fillCollection );
+		shapeFill.setPatternImage_collection_( patternPath, fillCollection );
 	} else {
-		shape.style().fills().firstObject().setPatternImage( filePath );
+		shape.style().fills().firstObject().setPatternImage( patternPath );
 		shape.style().fills().firstObject().setPatternFillType( 1 );
 	}
 }

@@ -33,3 +33,5 @@ fw2json.appVer.minor    = ( fw2json.appVer.full.split( '.' ) )[1];
 fw2json.appVer.revision = ( fw2json.appVer.full.split( '.' ) )[2] || 0;
 
 fw2json.symbols = [];
+
+fw2json.resPath = {}
