@@ -1,6 +1,6 @@
 var fw2json = fw2json || {};
 
-fw2json.scriptVersion = '0.9.0';
+fw2json.scriptVersion = '0.9.1';
 
 fw2json.blendMode = [];
 fw2json.blendMode['normal'] = 0;
