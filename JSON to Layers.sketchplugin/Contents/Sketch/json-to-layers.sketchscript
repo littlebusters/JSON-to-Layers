@@ -310,7 +310,7 @@ function addBorder( shape, attrs ) {
 function addEffects( shape, attrs ) {
 	for ( var i = attrs.length - 1; i >= 0; i-- ) {
 		log( '  Applied Effect: ' + attrs[i].name );
-		if ( 'ドロップシャドウ' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'drop shadow' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().shadows().addNewStylePart();
 			effect.blurRadius = attrs[i].ShadowBlur;
 			
@@ -323,7 +323,7 @@ function addEffects( shape, attrs ) {
 			color.alpha = getOpacity( attrs[i].ShadowColor );
 			effect.color = color;
 		}
-		if ( 'シャドウ (内側)' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'inner shadow' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().innerShadows().addNewStylePart();
 			effect.blurRadius = attrs[i].ShadowBlur;
 			
@@ -336,7 +336,7 @@ function addEffects( shape, attrs ) {
 			color.alpha = getOpacity( attrs[i].ShadowColor );
 			effect.color = color;
 		}
-		if ( 'グロー' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'glow' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().shadows().addNewStylePart();
 			effect.blurRadius = attrs[i].MaskSoftness;
 
@@ -348,7 +348,7 @@ function addEffects( shape, attrs ) {
 			color.alpha = attrs[i].BevelContrast / 100;
 			effect.color = color;
 		}
-		if ( '光彩 (内側)' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'inner glow' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().innerShadows().addNewStylePart();
 			effect.blurRadius = attrs[i].MaskSoftness;
 			
@@ -360,7 +360,7 @@ function addEffects( shape, attrs ) {
 			color.alpha = attrs[i].BevelContrast / 100;
 			effect.color = color;
 		}
-		if ( 'ソリッドシャドウ…' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'solid shadow' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].color ) );
 			color.alpha = 1;
 
@@ -376,26 +376,26 @@ function addEffects( shape, attrs ) {
 				effect.color = color;
 			};
 		}
-		if ( 'ぼかし (ガウス)...' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'gaussian blur' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().blur();
 			effect.isEnabled = 1;
 			effect.type = 0;
 			effect.radius = attrs[i].gaussian_blur_radius;
 		}
-		if ( 'ぼかし (移動)...' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'motion blur' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().blur();
 			effect.isEnabled = 1;
 			effect.type = 1;
 			effect.radius = attrs[i].motion_blur_distance;
 			effect.motionAngle = attrs[i].motion_blur_angle;
 		}
-		if ( 'ぼかし (ズーム)...' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'zoom blur' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().blur();
 			effect.isEnabled = 1;
 			effect.type = 2;
 			effect.radius = attrs[i].zoom_blur_amount;
 		}
-		if ( 'ノイズを追加...' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'add noise' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().fills().addNewStylePart();
 			effect.fillType = 5;
 			if ( attrs[i].add_noise_use_color ) {
@@ -406,7 +406,7 @@ function addEffects( shape, attrs ) {
 			effect.contextSettings().blendMode = 9;
 			effect.contextSettings().opacity = Math.round( attrs[i].add_noise_amount / 4 ) / 100;
 		}
-		if ( 'カラーの塗り' == attrs[i].name && attrs[i].EffectIsVisible ) {
+		if ( 'color fill' == attrs[i].name && attrs[i].EffectIsVisible ) {
 			var effect = shape.style().fills().addNewStylePart();
 			effect.setFillType(0);
 			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
@@ -414,7 +414,7 @@ function addEffects( shape, attrs ) {
 			effect.contextSettings().blendMode = fw2json.solidFill[attrs[i].Blendmode - 1];
 			effect.color = color;
 		}
-		if ( 'Photoshop' == attrs[i].name.substr( 0, 9 ) ) {
+		if ( 'photoshop' == attrs[i].name.substr( 0, 9 ) ) {
 			// log( '  PsLE:' );
 			for ( var j = fw2json.PsLE.length - 1; j >= 0; j-- ) {
 				// log( '    Flag: ' + fw2json.PsLE[j] + ': ' + attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) );
