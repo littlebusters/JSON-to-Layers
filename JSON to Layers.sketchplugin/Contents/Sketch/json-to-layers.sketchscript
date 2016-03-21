@@ -368,8 +368,8 @@ function addEffects( shape, attrs ) {
 				effect.blurRadius = 0;
 				
 				var coord = getCoordfromTrigFunc( attrs[i].distance, attrs[i].angle );
-				effect.offsetX = coord.x;
-				effect.offsetY = coord.y;
+				effect.offsetX = coord.x * (( j + 1 ) / attrs[i].distance );
+				effect.offsetY = coord.y * (( j + 1 ) / attrs[i].distance );
 				effect.spread = 0;
 
 				effect.color = color;
