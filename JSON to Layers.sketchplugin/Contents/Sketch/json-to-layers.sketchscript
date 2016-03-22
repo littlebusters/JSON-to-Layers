@@ -304,39 +304,56 @@ function addBorder( shape, attrs ) {
 function addEffects( shape, attrs ) {
 	for ( var i = attrs.length - 1; i >= 0; i-- ) {
 		log( '  Applied Effect: ' + attrs[i].name );
-		if ( 'drop shadow' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().shadows().addNewStylePart();
-			effect.blurRadius = attrs[i].ShadowBlur;
-			
-			var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
-			effect.offsetX = coord.x;
-			effect.offsetY = coord.y;
-			effect.spread = 0;
 
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
-			color.alpha = getOpacity( attrs[i].ShadowColor );
-			effect.color = color;
-		}
-		if ( 'inner shadow' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().innerShadows().addNewStylePart();
-			effect.blurRadius = attrs[i].ShadowBlur;
-			
-			var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
-			effect.offsetX = coord.x;
-			effect.offsetY = coord.y;
-			effect.spread = 0;
+		if ( attrs[i].EffectIsVisible ) {
+			switch ( attrs[i].name ) {
+				case 'drop shadow':
+					var effect = shape.style().shadows().addNewStylePart();
+					effect.blurRadius = attrs[i].ShadowBlur;
+					
+					var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
+					effect.offsetX = coord.x;
+					effect.offsetY = coord.y;
+					effect.spread = 0;
 
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
-			color.alpha = getOpacity( attrs[i].ShadowColor );
-			effect.color = color;
-		}
-		if ( 'glow' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().shadows().addNewStylePart();
+					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
+					color.alpha = getOpacity( attrs[i].ShadowColor );
+					effect.color = color;
+					break;
+				case 'inner shadow':
+					var effect = shape.style().innerShadows().addNewStylePart();
+					effect.blurRadius = attrs[i].ShadowBlur;
+					
+					var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
+					effect.offsetX = coord.x;
+					effect.offsetY = coord.y;
+					effect.spread = 0;
 
-			switch( attrs[i].BevelType + '' ) {
-				case '4':
+					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
+					color.alpha = getOpacity( attrs[i].ShadowColor );
+					effect.color = color;
+					break;
+				case 'glow':
+					var effect = shape.style().shadows().addNewStylePart();
+
+					switch( attrs[i].BevelType + '' ) {
+						case '4':
+							effect.blurRadius = attrs[i].MaskSoftness;
+
+							effect.offsetX = 0;
+							effect.offsetY = 0;
+							effect.spread = attrs[i].GlowWidth;
+
+							var color = MSColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
+							color.alpha = attrs[i].BevelContrast / 100;
+							effect.color = color;
+							break;
+					}
+					break;
+				case 'inner glow':
+					var effect = shape.style().innerShadows().addNewStylePart();
 					effect.blurRadius = attrs[i].MaskSoftness;
-
+					
 					effect.offsetX = 0;
 					effect.offsetY = 0;
 					effect.spread = attrs[i].GlowWidth;
@@ -345,237 +362,224 @@ function addEffects( shape, attrs ) {
 					color.alpha = attrs[i].BevelContrast / 100;
 					effect.color = color;
 					break;
-			}
-		}
-		if ( 'inner glow' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().innerShadows().addNewStylePart();
-			effect.blurRadius = attrs[i].MaskSoftness;
-			
-			effect.offsetX = 0;
-			effect.offsetY = 0;
-			effect.spread = attrs[i].GlowWidth;
+				case 'solid shadow':
+					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].color ) );
+					color.alpha = 1;
 
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
-			color.alpha = attrs[i].BevelContrast / 100;
-			effect.color = color;
-		}
-		if ( 'solid shadow' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].color ) );
-			color.alpha = 1;
+					for ( var j = attrs[i].distance - 1; j >= 0; j-- ) {
+						var effect = shape.style().shadows().addNewStylePart();
+						effect.blurRadius = 0;
+						
+						var coord = getCoordfromTrigFunc( attrs[i].distance, attrs[i].angle );
+						effect.offsetX = coord.x * (( j + 1 ) / attrs[i].distance );
+						effect.offsetY = coord.y * (( j + 1 ) / attrs[i].distance );
+						effect.spread = 0;
 
-			for ( var j = attrs[i].distance - 1; j >= 0; j-- ) {
-				var effect = shape.style().shadows().addNewStylePart();
-				effect.blurRadius = 0;
-				
-				var coord = getCoordfromTrigFunc( attrs[i].distance, attrs[i].angle );
-				effect.offsetX = coord.x * (( j + 1 ) / attrs[i].distance );
-				effect.offsetY = coord.y * (( j + 1 ) / attrs[i].distance );
-				effect.spread = 0;
-
-				effect.color = color;
-			};
-		}
-		if ( 'gaussian blur' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().blur();
-			effect.isEnabled = 1;
-			effect.type = 0;
-			effect.radius = attrs[i].gaussian_blur_radius;
-		}
-		if ( 'motion blur' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().blur();
-			effect.isEnabled = 1;
-			effect.type = 1;
-			effect.radius = attrs[i].motion_blur_distance;
-			effect.motionAngle = attrs[i].motion_blur_angle;
-		}
-		if ( 'zoom blur' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().blur();
-			effect.isEnabled = 1;
-			effect.type = 2;
-			effect.radius = attrs[i].zoom_blur_amount;
-		}
-		if ( 'add noise' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().fills().addNewStylePart();
-			effect.fillType = 5;
-			if ( attrs[i].add_noise_use_color ) {
-				effect.noiseIndex = 3;
-			} else {
-				effect.noiseIndex = 2;
-			}
-			effect.contextSettings().blendMode = 9;
-			effect.contextSettings().opacity = Math.round( attrs[i].add_noise_amount / 4 ) / 100;
-		}
-		if ( 'color fill' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().fills().addNewStylePart();
-			effect.setFillType(0);
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
-			color.alpha = attrs[i].Opacity / 100;
-			effect.contextSettings().blendMode = fw2json.solidFill[attrs[i].Blendmode - 1];
-			effect.color = color;
-		}
-		if ( 'photoshop' == attrs[i].name.substr( 0, 9 ) ) {
-			// log( '  PsLE:' );
-			for ( var j = fw2json.PsLE.length - 1; j >= 0; j-- ) {
-				// log( '    Flag: ' + fw2json.PsLE[j] + ': ' + attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) );
-				if( attrs[i][fw2json.PsLE[j]] && '1' == attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) ) {
-					// log( '      isEnabled:' );
-					var psleAttrs = attrs[i][fw2json.PsLE[j]].split( '&' );
-					// log( '      psleAttrs:' );
-					// log( psleAttrs );
-					switch ( fw2json.PsLE[j] ) {
-						case 'satin':
-							break;
-						case 'dropShadow':
-							var effect = shape.style().shadows().addNewStylePart();
-							effect.blurRadius = psleAttrs[6];
-							
-							var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
-							effect.offsetX = coord.x;
-							effect.offsetY = coord.y;
-							effect.spread = psleAttrs[7];
-
-							var originColor = psleAttrs[11].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = psleAttrs[1] / 100;
-							effect.color = color;
-							break;
-						case 'innerShadow':
-							var effect = shape.style().innerShadows().addNewStylePart();
-							effect.blurRadius = psleAttrs[6];
-							
-							var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
-							effect.offsetX = coord.x;
-							effect.offsetY = coord.y;
-							effect.spread = psleAttrs[7];
-
-							var originColor = psleAttrs[11].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = psleAttrs[1] / 100;
-							effect.color = color;
-							break;
-						case 'outerGlow':
-							var effect = shape.style().shadows().addNewStylePart();
-							var subAttrs = psleAttrs[3].split( ':' );
-							effect.blurRadius = subAttrs[2];
-							
-							effect.offsetX = 0;
-							effect.offsetY = 0;
-							effect.spread = subAttrs[1];
-
-							var originColor = psleAttrs[5].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = subAttrs[0] / 100;
-							effect.color = color;
-
-							var blendMode = psleAttrs[2];
-							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
-							break;
-						case 'innerGlow':
-							var effect = shape.style().innerShadows().addNewStylePart();
-							var subAttrs = psleAttrs[3].split( ':' );
-							effect.blurRadius = subAttrs[2];
-							
-							effect.offsetX = 0;
-							effect.offsetY = 0;
-							effect.spread = subAttrs[1];
-
-							var originColor = psleAttrs[5].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = subAttrs[0] / 100;
-							effect.color = color;
-							
-							var blendMode = psleAttrs[2];
-							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
-							break;
-						case 'solidFill':
-							var effect = shape.style().fills().addNewStylePart();
-							effect.setFillType(0);
-							var originColor = psleAttrs[3].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = psleAttrs[1] / 100;
-							var blendMode = psleAttrs[2];
-							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
-							effect.color = color;
-							break;
-						case 'gradientFill':
-							var effect = shape.style().fills().addNewStylePart();
-							effect.setFillType(1);
-							// log( '      opacity: ' + ( psleAttrs[3] ) );
-							// log( '      opacity: ' + ( psleAttrs[3] / 100 ) );
-							effect.contextSettings().opacity = psleAttrs[3] / 100;
-							var coord = getCoordfromTrigFunc( 1, psleAttrs[4], true );
-							var coordStretch = ( Math.abs( coord.x ) > Math.abs( coord.y ) ) ? 1 / Math.abs( coord.x ) : 1 / Math.abs( coord.y );
-							coord.x = coord.x * coordStretch;
-							coord.y = coord.y * coordStretch;
-							var startX = 0;
-							var startY = 0;
-							// offset coordinate
-							if ( 0 > coord.x ) {
-								startX = startX + Math.abs( coord.x );
-								coord.x = 0;
-							}
-							if ( 0 > coord.y ) {
-								startY = startY + Math.abs( coord.y );
-								coord.y = 0;
-							}
-							effect.gradient().setPoint_atIndex_( CGPointMake( startX, startY ), 0 )
-							effect.gradient().setPoint_atIndex_( CGPointMake( coord.x, coord.y ), 1 )
-							break;
-						case 'patternFill':
-							break;
-						case 'bevelEmboss':
-							break;
-						case 'stroke':
-							var effect = shape.style().borders().addNewStylePart();
-							var originColor = psleAttrs[4].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = psleAttrs[1] / 100;
-							effect.color = color;
-							effect.thickness = psleAttrs[2];
-							var blendMode = psleAttrs[3];
-							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
-							switch ( psleAttrs[5] ) {
-								case 'centeredFrame':
-									effect.setPosition( 0 );
-									break; 
-								case 'insetFrame':
-									effect.setPosition( 1 );
-									break; 
-								case 'outsetFrame':
-									effect.setPosition( 2 );
-									break; 
-								default:
-									effect.setPosition( 0 );
-									break; 
-							}
-							break;
+						effect.color = color;
+					};
+					break;
+				case 'gaussian blur':
+					var effect = shape.style().blur();
+					effect.isEnabled = 1;
+					effect.type = 0;
+					effect.radius = attrs[i].gaussian_blur_radius;
+					break;
+				case 'motion blur':
+					var effect = shape.style().blur();
+					effect.isEnabled = 1;
+					effect.type = 1;
+					effect.radius = attrs[i].motion_blur_distance;
+					effect.motionAngle = attrs[i].motion_blur_angle;
+					break;
+				case 'zoom blur':
+					var effect = shape.style().blur();
+					effect.isEnabled = 1;
+					effect.type = 2;
+					effect.radius = attrs[i].zoom_blur_amount;
+					break;
+				case 'add noise':
+					var effect = shape.style().fills().addNewStylePart();
+					effect.fillType = 5;
+					if ( attrs[i].add_noise_use_color ) {
+						effect.noiseIndex = 3;
+					} else {
+						effect.noiseIndex = 2;
 					}
-				}
-			};
+					effect.contextSettings().blendMode = 9;
+					effect.contextSettings().opacity = Math.round( attrs[i].add_noise_amount / 4 ) / 100;
+					break;
+				case 'color fill':
+					var effect = shape.style().fills().addNewStylePart();
+					effect.setFillType(0);
+					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
+					color.alpha = attrs[i].Opacity / 100;
+					effect.contextSettings().blendMode = fw2json.solidFill[attrs[i].Blendmode - 1];
+					effect.color = color;
+					break;
+				case 'photoshop live effects':
+					// log( '  PsLE:' );
+					for ( var j = fw2json.PsLE.length - 1; j >= 0; j-- ) {
+						// log( '    Flag: ' + fw2json.PsLE[j] + ': ' + attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) );
+						if( attrs[i][fw2json.PsLE[j]] && '1' == attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) ) {
+							// log( '      isEnabled:' );
+							var psleAttrs = attrs[i][fw2json.PsLE[j]].split( '&' );
+							// log( '      psleAttrs:' );
+							// log( psleAttrs );
+							switch ( fw2json.PsLE[j] ) {
+								case 'satin':
+									break;
+								case 'dropShadow':
+									var effect = shape.style().shadows().addNewStylePart();
+									effect.blurRadius = psleAttrs[6];
+									
+									var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
+									effect.offsetX = coord.x;
+									effect.offsetY = coord.y;
+									effect.spread = psleAttrs[7];
+
+									var originColor = psleAttrs[11].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = psleAttrs[1] / 100;
+									effect.color = color;
+									break;
+								case 'innerShadow':
+									var effect = shape.style().innerShadows().addNewStylePart();
+									effect.blurRadius = psleAttrs[6];
+									
+									var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
+									effect.offsetX = coord.x;
+									effect.offsetY = coord.y;
+									effect.spread = psleAttrs[7];
+
+									var originColor = psleAttrs[11].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = psleAttrs[1] / 100;
+									effect.color = color;
+									break;
+								case 'outerGlow':
+									var effect = shape.style().shadows().addNewStylePart();
+									var subAttrs = psleAttrs[3].split( ':' );
+									effect.blurRadius = subAttrs[2];
+									
+									effect.offsetX = 0;
+									effect.offsetY = 0;
+									effect.spread = subAttrs[1];
+
+									var originColor = psleAttrs[5].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = subAttrs[0] / 100;
+									effect.color = color;
+
+									var blendMode = psleAttrs[2];
+									effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+									break;
+								case 'innerGlow':
+									var effect = shape.style().innerShadows().addNewStylePart();
+									var subAttrs = psleAttrs[3].split( ':' );
+									effect.blurRadius = subAttrs[2];
+									
+									effect.offsetX = 0;
+									effect.offsetY = 0;
+									effect.spread = subAttrs[1];
+
+									var originColor = psleAttrs[5].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = subAttrs[0] / 100;
+									effect.color = color;
+									
+									var blendMode = psleAttrs[2];
+									effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+									break;
+								case 'solidFill':
+									var effect = shape.style().fills().addNewStylePart();
+									effect.setFillType(0);
+									var originColor = psleAttrs[3].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = psleAttrs[1] / 100;
+									var blendMode = psleAttrs[2];
+									effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+									effect.color = color;
+									break;
+								case 'gradientFill':
+									var effect = shape.style().fills().addNewStylePart();
+									effect.setFillType(1);
+									// log( '      opacity: ' + ( psleAttrs[3] ) );
+									// log( '      opacity: ' + ( psleAttrs[3] / 100 ) );
+									effect.contextSettings().opacity = psleAttrs[3] / 100;
+									var coord = getCoordfromTrigFunc( 1, psleAttrs[4], true );
+									var coordStretch = ( Math.abs( coord.x ) > Math.abs( coord.y ) ) ? 1 / Math.abs( coord.x ) : 1 / Math.abs( coord.y );
+									coord.x = coord.x * coordStretch;
+									coord.y = coord.y * coordStretch;
+									var startX = 0;
+									var startY = 0;
+									// offset coordinate
+									if ( 0 > coord.x ) {
+										startX = startX + Math.abs( coord.x );
+										coord.x = 0;
+									}
+									if ( 0 > coord.y ) {
+										startY = startY + Math.abs( coord.y );
+										coord.y = 0;
+									}
+									effect.gradient().setPoint_atIndex_( CGPointMake( startX, startY ), 0 )
+									effect.gradient().setPoint_atIndex_( CGPointMake( coord.x, coord.y ), 1 )
+									break;
+								case 'patternFill':
+									break;
+								case 'bevelEmboss':
+									break;
+								case 'stroke':
+									var effect = shape.style().borders().addNewStylePart();
+									var originColor = psleAttrs[4].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = psleAttrs[1] / 100;
+									effect.color = color;
+									effect.thickness = psleAttrs[2];
+									var blendMode = psleAttrs[3];
+									effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+									switch ( psleAttrs[5] ) {
+										case 'centeredFrame':
+											effect.setPosition( 0 );
+											break; 
+										case 'insetFrame':
+											effect.setPosition( 1 );
+											break; 
+										case 'outsetFrame':
+											effect.setPosition( 2 );
+											break; 
+										default:
+											effect.setPosition( 0 );
+											break; 
+									}
+									break;
+							}
+						}
+					};
+			}
 		}
 	};
 }
