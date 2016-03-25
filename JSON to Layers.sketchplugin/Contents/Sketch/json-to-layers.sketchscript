@@ -334,10 +334,9 @@ function addEffects( shape, attrs ) {
 					effect.color = color;
 					break;
 				case 'glow':
-					var effect = shape.style().shadows().addNewStylePart();
-
 					switch( attrs[i].BevelType + '' ) {
 						case '4':
+							var effect = shape.style().shadows().addNewStylePart();
 							effect.blurRadius = attrs[i].MaskSoftness;
 
 							effect.offsetX = 0;
@@ -388,14 +387,14 @@ function addEffects( shape, attrs ) {
 					var effect = shape.style().blur();
 					effect.isEnabled = 1;
 					effect.type = 1;
-					effect.radius = attrs[i].motion_blur_distance;
+					effect.radius = attrs[i].motion_blur_distance / 2;
 					effect.motionAngle = attrs[i].motion_blur_angle;
 					break;
 				case 'zoom blur':
 					var effect = shape.style().blur();
 					effect.isEnabled = 1;
 					effect.type = 2;
-					effect.radius = attrs[i].zoom_blur_amount;
+					effect.radius = attrs[i].zoom_blur_amount / 2;
 					break;
 				case 'add noise':
 					var effect = shape.style().fills().addNewStylePart();
@@ -413,7 +412,7 @@ function addEffects( shape, attrs ) {
 					effect.setFillType(0);
 					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
 					color.alpha = attrs[i].Opacity / 100;
-					effect.contextSettings().blendMode = fw2json.solidFill[attrs[i].Blendmode - 1];
+					effect.contextSettings().blendMode = fw2json.solidFill[attrs[i].Blendmode];
 					effect.color = color;
 					break;
 				case 'photoshop live effects':
