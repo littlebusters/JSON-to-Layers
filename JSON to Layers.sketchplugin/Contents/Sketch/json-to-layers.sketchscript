@@ -933,29 +933,9 @@ function addPatternFill( shape, attrs ) {
 }
 
 function addGradientFill( shape, pathAttrs ) {
-	var shapeStyle = shape.style();
-	log( '>>> addGradientFill' );
-	// shapeStyle.fills().addNewStylePart();
-	var shapeFill = shapeStyle.fill();
-	shapeFill.setFillType( 1 ); // gradient fill
+	log( '>>> addGradientFill: ' + pathAttrs.fill.gradient.gradientType );
+
 	var attrs = pathAttrs.fill.gradient;
-
-	var gradient = shapeFill.gradient();
-	switch ( attrs.gradientType ) {
-		case 'linear':
-			gradient.setGradientType( 0 );
-			break;
-		case 'radial':
-			gradient.setGradientType( 1 );
-			break;
-		case 'conical':
-			gradient.setGradientType( 2 );
-			break;
-		default:
-			gradient.setGradientType( 0 );
-			break;
-	}
-
 	var gradientNodes = attrs.nodes.concat( attrs.opacityNodes );
 
 	// sort gradient stops by position
@@ -1039,6 +1019,28 @@ function addGradientFill( shape, pathAttrs ) {
 		}
 	}
 
+	var shapeStyle = shape.style();
+	// shapeStyle.fills().addNewStylePart();
+	var shapeFill = shapeStyle.fill();
+	shapeFill.setFillType( 1 ); // gradient fill
+
+	var gradient = shapeFill.gradient();
+	switch ( attrs.gradientType ) {
+		case 'linear':
+			gradient.setGradientType( 0 );
+			break;
+		case 'radial':
+		case 'elliptical':
+			gradient.setGradientType( 1 );
+			break;
+		case 'conical':
+			gradient.setGradientType( 2 );
+			break;
+		default:
+			gradient.setGradientType( 0 );
+			break;
+	}
+
 	var orignPoint = optimazedPoints.length;
 	for ( var i = 0; i < orignPoint; i++ ) {
 		if ( 0 != optimazedPoints[i].position && 1 != optimazedPoints[i].position ) {
@@ -1057,11 +1059,41 @@ function addGradientFill( shape, pathAttrs ) {
 	var shapeH = shape.frame().height();
 	var startX = ( pathAttrs.fillHandle1.x - shapeX ) / shapeW;
 	var startY = ( pathAttrs.fillHandle1.y - shapeY ) / shapeH;
-	gradient.setPoint_atIndex_( CGPointMake( startX, startY ), 0 );
+	var endX = ( pathAttrs.fillHandle2.x - shapeX ) / shapeW;
+	var endY = ( pathAttrs.fillHandle2.y - shapeY ) / shapeH;
+	if ( 'elliptical' == attrs.gradientType ) {
+		var handlePoint1x = pathAttrs.fillHandle2.x - pathAttrs.fillHandle1.x;
+		var handlePoint1y = pathAttrs.fillHandle2.y - pathAttrs.fillHandle1.y;
+		if ( 0 != handlePoint1x && 0 != handlePoint1y ) {
+			var handle1Length = Math.sqrt( handlePoint1x * handlePoint1x + handlePoint2y * handlePoint2y );
+		} else {
+			var handle1Length = ( 0 != handlePoint1x ) ? handlePoint1x : handlePoint1y;
+		}
+		var handlePoint2x = pathAttrs.fillHandle3.x - pathAttrs.fillHandle1.x;
+		var handlePoint2y = pathAttrs.fillHandle3.y - pathAttrs.fillHandle1.y;
+		if ( 0 != handlePoint2x && 0 != handlePoint2y ) {
+			var handle2Length = Math.sqrt( handlePoint2x * handlePoint2x + handlePoint2y * handlePoint2y );
+		} else {
+			var handle2Length = ( 0 != handlePoint2x ) ? handlePoint2x : handlePoint2y;
+		}
+		gradient.elipseLength = Math.abs( handle2Length / handle1Length );
+	}
 	if ( 'conical' != attrs.gradientType ) {
-		var endX = ( pathAttrs.fillHandle2.x - shapeX ) / shapeW;
-		var endY = ( pathAttrs.fillHandle2.y - shapeY ) / shapeH;
+		gradient.from = CGPointMake( startX, startY );
+		gradient.setPoint_atIndex_( CGPointMake( startX, startY ), 0 );
 		gradient.setPoint_atIndex_( CGPointMake( endX, endY ), orignPoint - 1 );
+	} else {
+		for ( var i = 0; i < gradient.stops().length(); i++ ) {
+			gradient.stops().objectAtIndex( i ).position = gradient.stops().objectAtIndex( i ).position() / 2;
+		}
+		var originalStops = gradient.stops().length();
+		for ( var i = 0; i < originalStops; i++ ) {
+			if ( 0 != gradient.stops().objectAtIndex( i ).position() 
+				 && 0.5 != gradient.stops().objectAtIndex( i ).position() ) {
+				gradient.addStopAtLength( 1 - gradient.stops().objectAtIndex( i ).position() );
+				gradient.setColor_atIndex_( gradient.stops().objectAtIndex( i ).color(), gradient.stops().length() - 1 );
+			}
+		}
 	}
 }
 
