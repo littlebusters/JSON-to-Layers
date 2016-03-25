@@ -1,13 +1,13 @@
 @import 'lib/const.js';
 
-fw2json.init = function ( doc ) {
+json2Layer.init = function ( doc ) {
 	this.doc = doc;
 }
 
 var onRun = function ( context ) {
 	log( 'Start Proccessing ------------------------------------------' );
-	fw2json.init( context.document );
-	var doc = fw2json.doc;
+	json2Layer.init( context.document );
+	var doc = json2Layer.doc;
 	var currentPage = doc.currentPage();
 
 	var openPanel = NSOpenPanel.openPanel();
@@ -22,9 +22,9 @@ var onRun = function ( context ) {
 		var filePath = openPanel.URL().path();
 		var fwJSON = JSON.parse( NSString.stringWithContentsOfFile( filePath ) ); 
 		log( 'Open File from: ' + filePath );
-		fw2json.orgSymbols = fwJSON.symbols;
-		fw2json.resPath.basePath    = openPanel.directoryURL().path();
-		fw2json.resPath.exportedDir = fwJSON.resExportedDir;
+		json2Layer.orgSymbols = fwJSON.symbols;
+		json2Layer.resPath.basePath    = openPanel.directoryURL().path();
+		json2Layer.resPath.exportedDir = fwJSON.resExportedDir;
 	} else {
 		return false;
 	}
@@ -76,7 +76,7 @@ function createElements( parent, elems, isMask ) {
 					log( '     Type: Layer' );
 					shape = createGroup( parent, elems[i], true );
 					createElements( shape, elems[i].elems );
-					if ( 5 > fw2json.appVer.minor ) {
+					if ( 5 > json2Layer.appVer.minor ) {
 						shape.resizeRoot( false );
 					} else {
 						shape.resizeToFitChildrenWithOption( false );
@@ -125,7 +125,7 @@ function createElements( parent, elems, isMask ) {
 				addContextSettings( shape, elems[i] );
 				createElements( shape, elems[i].elements );
 
-				if ( 5 > fw2json.appVer.minor ) {
+				if ( 5 > json2Layer.appVer.minor ) {
 					shape.resizeRoot( false );
 				} else {
 					shape.resizeToFitChildrenWithOption( false );
@@ -136,10 +136,10 @@ function createElements( parent, elems, isMask ) {
 				log( '     Type: Layer Group - Symbol' );
 				var registeredSymbol = false;
 				var slc = 0;
-				for ( slc = fw2json.symbols.length - 1; slc >= 0; slc-- ) {
-					if ( fw2json.symbols[slc].fwSymbolID == elems[i].symbolID
-					     && fw2json.symbols[slc].width   == elems[i].width
-					     && fw2json.symbols[slc].height  == elems[i].height
+				for ( slc = json2Layer.symbols.length - 1; slc >= 0; slc-- ) {
+					if ( json2Layer.symbols[slc].fwSymbolID == elems[i].symbolID
+					     && json2Layer.symbols[slc].width   == elems[i].width
+					     && json2Layer.symbols[slc].height  == elems[i].height
 					) {
 						registeredSymbol = true;
 						break;
@@ -158,7 +158,7 @@ function createElements( parent, elems, isMask ) {
 		}
 
 		if ( hasMask ) {
-			if ( 5 > fw2json.appVer.minor ) {
+			if ( 5 > json2Layer.appVer.minor ) {
 				actualParent.resizeRoot( false );
 			} else {
 				actualParent.resizeToFitChildrenWithOption( false );
@@ -172,7 +172,7 @@ function createElements( parent, elems, isMask ) {
 	if ( !isMask ) {
 		log( '!!! Finished createElements !!!');
 		log( '!!! resizeRoot() to ' + parent.name() );
-		if ( 5 > fw2json.appVer.minor ) {
+		if ( 5 > json2Layer.appVer.minor ) {
 			parent.resizeRoot( false );
 		} else {
 			parent.resizeToFitChildrenWithOption( false );
@@ -185,8 +185,8 @@ function createElements( parent, elems, isMask ) {
 function addContextSettings( shape, attrs ) {
 	var contextSettings = shape.style().contextSettings();
 	contextSettings.opacity = Math.round( attrs.opacity ) / 100;
-	if ( fw2json.blendMode[attrs.blendMode] ) {
-		contextSettings.blendMode = fw2json.blendMode[attrs.blendMode];
+	if ( json2Layer.blendMode[attrs.blendMode] ) {
+		contextSettings.blendMode = json2Layer.blendMode[attrs.blendMode];
 	}
 }
 
@@ -412,19 +412,19 @@ function addEffects( shape, attrs ) {
 					effect.setFillType(0);
 					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
 					color.alpha = attrs[i].Opacity / 100;
-					effect.contextSettings().blendMode = fw2json.solidFill[attrs[i].Blendmode];
+					effect.contextSettings().blendMode = json2Layer.solidFill[attrs[i].Blendmode];
 					effect.color = color;
 					break;
 				case 'photoshop live effects':
 					// log( '  PsLE:' );
-					for ( var j = fw2json.PsLE.length - 1; j >= 0; j-- ) {
-						// log( '    Flag: ' + fw2json.PsLE[j] + ': ' + attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) );
-						if( attrs[i][fw2json.PsLE[j]] && '1' == attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) ) {
+					for ( var j = json2Layer.PsLE.length - 1; j >= 0; j-- ) {
+						// log( '    Flag: ' + json2Layer.PsLE[j] + ': ' + attrs[i][json2Layer.PsLE[j]].substring( 0, 1 ) );
+						if( attrs[i][json2Layer.PsLE[j]] && '1' == attrs[i][json2Layer.PsLE[j]].substring( 0, 1 ) ) {
 							// log( '      isEnabled:' );
-							var psleAttrs = attrs[i][fw2json.PsLE[j]].split( '&' );
+							var psleAttrs = attrs[i][json2Layer.PsLE[j]].split( '&' );
 							// log( '      psleAttrs:' );
 							// log( psleAttrs );
-							switch ( fw2json.PsLE[j] ) {
+							switch ( json2Layer.PsLE[j] ) {
 								case 'satin':
 									break;
 								case 'dropShadow':
@@ -482,7 +482,7 @@ function addEffects( shape, attrs ) {
 									effect.color = color;
 
 									var blendMode = psleAttrs[2];
-									effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
 									break;
 								case 'innerGlow':
 									var effect = shape.style().innerShadows().addNewStylePart();
@@ -503,7 +503,7 @@ function addEffects( shape, attrs ) {
 									effect.color = color;
 									
 									var blendMode = psleAttrs[2];
-									effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
 									break;
 								case 'solidFill':
 									var effect = shape.style().fills().addNewStylePart();
@@ -516,7 +516,7 @@ function addEffects( shape, attrs ) {
 									} );
 									color.alpha = psleAttrs[1] / 100;
 									var blendMode = psleAttrs[2];
-									effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
 									effect.color = color;
 									break;
 								case 'gradientFill':
@@ -559,7 +559,7 @@ function addEffects( shape, attrs ) {
 									effect.color = color;
 									effect.thickness = psleAttrs[2];
 									var blendMode = psleAttrs[3];
-									effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
+									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
 									switch ( psleAttrs[5] ) {
 										case 'centeredFrame':
 											effect.setPosition( 0 );
@@ -585,8 +585,8 @@ function addEffects( shape, attrs ) {
 
 function importBitmap( parent, attrs, isMask ) {
 	var filePath = attrs.uri;
-	var splitPath = filePath.split( fw2json.resPath.basePath );
-	filePath = fw2json.resPath.basePath + splitPath[1];
+	var splitPath = filePath.split( json2Layer.resPath.basePath );
+	filePath = json2Layer.resPath.basePath + splitPath[1];
 
 	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
 	bitmap = setFrame( bitmap, attrs, ( isMask ? parent : false ) );
@@ -830,21 +830,21 @@ function createSymbol( parent, attrs ) {
 	var shape = createGroup( parent, attrs );
 	shape.setName( attrs.symbolName );
 	addContextSettings( shape, attrs );
-	createElements( shape, fw2json.orgSymbols[attrs.elements].elements );
-	if ( 5 > fw2json.appVer.minor ) {
+	createElements( shape, json2Layer.orgSymbols[attrs.elements].elements );
+	if ( 5 > json2Layer.appVer.minor ) {
 		shape.resizeRoot( false );
 	} else {
 		shape.resizeToFitChildrenWithOption( false );
 	}
 
-	var symbols = fw2json.doc.documentData().layerSymbols();
+	var symbols = json2Layer.doc.documentData().layerSymbols();
 	symbols.addSymbolWithName_firstInstance( attrs.symbolName, shape );
 
 	var shape = parent.layers().objectAtIndex( parent.layers().count() - 1 );
 	shape.frame().x = attrs.left;
 	shape.frame().y = attrs.top;
 
-	fw2json.symbols.push( 
+	json2Layer.symbols.push( 
 		{ 
 			fwSymbolID: attrs.symbolID,
 			width: attrs.width, 
@@ -858,7 +858,7 @@ function createSymbol( parent, attrs ) {
 
 function addSymbol( parent, attrs, symbolIndex ) {
 	log( '           Exist Symbol' );
-	var symbol = fw2json.doc.documentData().layerSymbols().symbolAtIndex( symbolIndex );
+	var symbol = json2Layer.doc.documentData().layerSymbols().symbolAtIndex( symbolIndex );
 	var shape = symbol.newInstance();
 	shape.setName( attrs.name );
 	shape.frame().x = attrs.left;
@@ -893,15 +893,15 @@ function addGuideline ( parent, guides, grid ) {
 }
 
 function addTextureFill( shape, attrs ) {
-	var splitPath = attrs.fillTexture.filePath.split( fw2json.resPath.basePath );
-	var filePath = fw2json.resPath.basePath + splitPath[1];
+	var splitPath = attrs.fillTexture.filePath.split( json2Layer.resPath.basePath );
+	var filePath = json2Layer.resPath.basePath + splitPath[1];
 	var texturePath = NSImage.new().initWithContentsOfFile( filePath );
 	var textureFill = shape.style().fills().addNewStylePart();
 	
 	textureFill.setFillType( 4 );
 	textureFill.setPatternFillType( 0 );
 
-	if ( 5 > fw2json.appVer.minor ) {
+	if ( 5 > json2Layer.appVer.minor ) {
 		var fillCollection = textureFill.documentData().images();
 		textureFill.setPatternImage_collection_( texturePath, fillCollection );
 	} else {
@@ -910,12 +910,12 @@ function addTextureFill( shape, attrs ) {
 
 	var contextSettings = textureFill.contextSettings();
 	contextSettings.opacity = attrs.fill.textureBlend / 100;
-	contextSettings.blendMode = fw2json.blendMode['screen'];
+	contextSettings.blendMode = json2Layer.blendMode['screen'];
 }
 
 function addPatternFill( shape, attrs ) {
-	var splitPath = attrs.split( fw2json.resPath.basePath );
-	var filePath = fw2json.resPath.basePath + splitPath[1];
+	var splitPath = attrs.split( json2Layer.resPath.basePath );
+	var filePath = json2Layer.resPath.basePath + splitPath[1];
 	var patternPath = NSImage.new().initWithContentsOfFile( filePath );
 	var shapeStyle = shape.style();
 	var shapeFill = shapeStyle.fill();
@@ -923,7 +923,7 @@ function addPatternFill( shape, attrs ) {
 	shapeFill.setFillType( 4 );
 	shapeFill.setPatternFillType( 1 );
 
-	if ( 5 > fw2json.appVer.minor ) {
+	if ( 5 > json2Layer.appVer.minor ) {
 		var fillCollection = shapeFill.documentData().images();
 		shapeFill.setPatternImage_collection_( patternPath, fillCollection );
 	} else {
