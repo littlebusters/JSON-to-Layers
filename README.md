@@ -58,7 +58,7 @@ Can't convert the feather.
 
 ### Gradinent Fill
 
-Will convert Linear and Radial, Conical. otherwise convert to Linear gradient in Sketch.However, conical is incomplete conversion.
+Will convert Linear to Liner Gradient, Radial and Elliptical to Radial Gradient, Conical to Angular Gradient. otherwise convert to Linear gradient in Sketch.However, conical is incomplete conversion.
 
 ### Pattern Fill
 
@@ -74,6 +74,7 @@ Stroke setting to be converted is as follows.
 - dash setting
 - shape (circle or square)
 
+3-th of each gap and line setting are discared in Sketch 3.
 
 ### Blending
 
