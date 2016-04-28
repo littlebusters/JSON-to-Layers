@@ -29,6 +29,16 @@ var onRun = function ( context ) {
 		return false;
 	}
 
+	if ( 7 <= json2Layer.appVer.minor ) {
+		var masterPage = doc.addBlankPage();
+		doc.pages().objectAtIndex(1).setName( 'Symbols' );
+		json2Layer.symbols = {};
+		createSymbolMaster( masterPage, fwJSON.symbols );
+		doc.setCurrentPage( doc.pages().objectAtIndex(0) );
+	} else {
+		json2Layer.symbols = [];
+	}
+
 	var artboardPageOffset = 0; 
 	var artboardStateOffset = 0; 
 	for ( var i = 0; i < fwJSON.pages.length; i++ ) {
@@ -57,6 +67,36 @@ var onRun = function ( context ) {
 	}
 
 	log( '------------------------------------------ Close Proccessing' );
+
+}
+
+function createSymbolMaster( parent, symbols ) {
+	log( '-> Create Symbol Master' );
+	var artboardZeroPoint = { x: 0, y: 0 };
+
+	for ( var symbolID in symbols ) {
+		log( '   - ' + symbols[symbolID].symbolName );
+		var artboard = MSArtboardGroup.new();
+		artboard.setName( unescape( symbols[symbolID].symbolName ) );
+		artboard.frame().setX( artboardZeroPoint.x );
+		artboard.frame().setY( artboardZeroPoint.y );
+		artboard.frame().setWidth( symbols[symbolID].width );
+		artboard.frame().setHeight( symbols[symbolID].height );
+		parent.addLayers( [artboard] );
+
+		createElements( artboard, symbols[symbolID].elements );
+
+		for (var i = artboard.layers().count() - 1; i >= 0; i--) {
+			artboard.layers().objectAtIndex( i ).frame().addX( -symbols[symbolID].left );
+			artboard.layers().objectAtIndex( i ).frame().addY( -symbols[symbolID].top );
+		}
+
+		json2Layer.symbols[symbolID] = artboard.convertToSymbol();
+
+		artboardZeroPoint.x += symbols[symbolID].width + 100;
+	}
+	log( json2Layer.symbols );
+	log( '-> // Create Symbol Master' );
 
 }
 
@@ -134,23 +174,27 @@ function createElements( parent, elems, isMask ) {
 
 			case 'symbol':
 				log( '     Type: Layer Group - Symbol' );
-				var registeredSymbol = false;
-				var slc = 0;
-				for ( slc = json2Layer.symbols.length - 1; slc >= 0; slc-- ) {
-					if ( json2Layer.symbols[slc].fwSymbolID == elems[i].symbolID
-					     && json2Layer.symbols[slc].width   == elems[i].width
-					     && json2Layer.symbols[slc].height  == elems[i].height
-					) {
-						registeredSymbol = true;
-						break;
-					}
-				}
-				if ( registeredSymbol ) {
-					var shape = addSymbol( actualParent, elems[i], slc );
+				if ( 7 <= json2Layer.appVer.minor ) {
+					
 				} else {
-					var shape = createSymbol( actualParent, elems[i] );
+					var registeredSymbol = false;
+					var slc = 0;
+					for ( slc = json2Layer.symbols.length - 1; slc >= 0; slc-- ) {
+						if ( json2Layer.symbols[slc].fwSymbolID == elems[i].symbolID
+						     && json2Layer.symbols[slc].width   == elems[i].width
+						     && json2Layer.symbols[slc].height  == elems[i].height
+						) {
+							registeredSymbol = true;
+							break;
+						}
+					}
+					if ( registeredSymbol ) {
+						var shape = addSymbol( actualParent, elems[i], slc );
+					} else {
+						var shape = createSymbol( actualParent, elems[i] );
+					}
+					break;
 				}
-				break;
 			}
 
 		if ( null != elems[i].effectList ) {
