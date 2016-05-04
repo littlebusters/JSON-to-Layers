@@ -731,6 +731,12 @@ function createText( parent, attrs, isMask ) {
 		text.addAttribute_value_( NSParagraphStyleAttributeName, pragraph );
 	}
 	text = setFrame( text, attrs, ( isMask ? parent : false ) );
+
+	// Ajust bounding
+	if ( 6 <= json2Layer.appVer.minor ) {
+		text.frame().y = text.frame().y() - Math.round( ( attrs.leading - attrs.fontSize ) / 4 );
+		text.frame().height = attrs.leading;
+	}
 	
 	switch ( attrs.alignment ) {
 		case 'left':
