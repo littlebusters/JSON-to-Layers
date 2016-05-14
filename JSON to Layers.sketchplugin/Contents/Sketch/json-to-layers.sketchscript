@@ -42,7 +42,7 @@ var onRun = function ( context ) {
 		for ( var stateIndex = 0; stateIndex < fwJSON.pages[i].frames.length; stateIndex++ ) {
 			log( 'Frame (state): ' + stateIndex + ' ------------------------------------------>' );
 			var artboard = MSArtboardGroup.new();
-			artboard.setName( fwJSON.pages[i].pageName );
+			artboard.setName( unescape( fwJSON.pages[i].pageName ));
 			artboard.frame().setX( artboardPageOffset );
 			artboard.frame().setY( artboardStateOffset );
 			artboard.frame().setWidth( fwJSON.pages[i].width );
@@ -71,7 +71,7 @@ function createElements( parent, elems, isMask ) {
 	if ( !isMask ) isMask = false;
 
 	for ( var i = elems.length - 1; i >= 0; i-- ) {
-		log( '  -> Proccessing: ' + elems[i].name + ' / ' + elems[i].type );
+		log( '  -> Proccessing: ' + unescape( elems[i].name ) + ' / ' + elems[i].type );
 		var elemsType = elems[i].type;
 		var hasMask = ( null != elems[i].mask ) ? true : false;
 		var actualParent = ( hasMask ) ? createMask( parent, elems[i] ) : parent;
@@ -91,9 +91,9 @@ function createElements( parent, elems, isMask ) {
 				break;
 
 			case 'text':
-				log( '     Type: Text: ' + elems[i].textChars );
+				log( '     Type: Text: ' + unescape( elems[i].textChars ));
 				var shape = createText( actualParent, elems[i], isMask );
-				shape.setName( elems[i].textChars );
+				shape.setName( unescape( elems[i].textChars ));
 				break;
 
 			case 'bitmap':
@@ -106,7 +106,7 @@ function createElements( parent, elems, isMask ) {
 				log( '     Type: Rectangle' );
 				var shape = createRectangle( actualParent, elems[i], isMask );
 
-				shape.setName( elems[i].name );
+				shape.setName( unescape( elems[i].name ));
 				addContextSettings( shape, elems[i] );
 				addPathAttributes( shape, elems[i].pathAttributes, isMask );
 				break;
@@ -114,7 +114,7 @@ function createElements( parent, elems, isMask ) {
 			case 'path':
 				log( '     Type: Bezier Path' );
 				var shape = addBezier( actualParent, elems[i].bezierPath, isMask );
-				shape.setName( elems[i].name );
+				shape.setName( unescape( elems[i].name ));
 				addContextSettings( shape, elems[i] );
 				actualParent.addLayers( [shape] );
 				addPathAttributes( shape, elems[i].pathAttributes, isMask );
@@ -248,7 +248,7 @@ function addPathAttributes( shape, attrs, maskMode ) {
 		if ( 0 < attrs.fill.textureBlend && attrs.fillTexture.filePath && !maskMode ) {
 			addTextureFill( shape, attrs );
 		} else if ( 0 < attrs.fill.textureBlend && !maskMode ) {
-			shape.name = shape.name() + ' [texture not found]';
+			shape.name = unescape( shape.name() ) + ' [texture not found]';
 		}
 	}
 
@@ -620,7 +620,7 @@ function createGroup( parent, attrs, _isLayer ) {
 
 	var isLayer = _isLayer || false;	
 	var group = parent.addLayerOfType( 'group' );
-	group.setName( attrs.name || attrs.name );
+	group.setName( unescape( attrs.name ) || unescape( attrs.name ) );
 	group.hasClickThrough = ( isLayer ) ? 1 : 0;
 
 	return group;
@@ -637,7 +637,8 @@ function createText( parent, attrs, isMask ) {
 	var textPartNum = attrs.textRuns.length;
 	text.stringValue = '';
 	for ( var i = 0; i < textPartNum; i++ ) {
-		text.stringValue = text.stringValue() + attrs.textRuns[i].characters;
+		log( unescape( attrs.textRuns[i].characters ) + attrs.textRuns[i].characters );
+		text.stringValue = text.stringValue() + unescape( attrs.textRuns[i].characters );
 		textPart.push( textPart[i] + attrs.textRuns[i].characters.length );
 	}
 
@@ -774,7 +775,7 @@ function createRectangle( parent, attrs, isMask ) {
 function createSlice( parent, attrs, isMask ) {
 	var slice = MSSliceLayer.new();
 	slice = setFrame( slice, attrs, ( isMask ? parent : false ) );
-	slice.setName( attrs.baseName );
+	slice.setName( unescape( attrs.baseName ));
 
 	parent.addSlice( slice );
 
@@ -826,7 +827,7 @@ function createSymbol( parent, attrs ) {
 	log( '           Create Symbol' );
 
 	var shape = createGroup( parent, attrs );
-	shape.setName( attrs.symbolName );
+	shape.setName( unescape( attrs.symbolName ));
 	addContextSettings( shape, attrs );
 	createElements( shape, fw2json.orgSymbols[attrs.elements].elements );
 	if ( 5 > fw2json.appVer.minor ) {
@@ -858,7 +859,7 @@ function addSymbol( parent, attrs, symbolIndex ) {
 	log( '           Exist Symbol' );
 	var symbol = fw2json.doc.documentData().layerSymbols().symbolAtIndex( symbolIndex );
 	var shape = symbol.newInstance();
-	shape.setName( attrs.name );
+	shape.setName( unescape( attrs.name ));
 	shape.frame().x = attrs.left;
 	shape.frame().y = attrs.top;
 	parent.addLayers( [shape] );
