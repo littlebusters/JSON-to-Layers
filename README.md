@@ -6,7 +6,7 @@ You can convert to Fireworks PNG stracture as JSON and import it in the Bohemian
 
 ## Installation
 
-Download the plugin zip and unzip.
+Download the plugin zip and unzip and double click the "JSON to Layers.sketchplugin".
 
 ### for Fireworks
 
