@@ -11,7 +11,7 @@ Fw to JSON フォルダをFireworksのCommandフォルダへコピーします�
 OSXであれば、ターミナル.appにて次のコマンドを実行すればフォルダを開けます。
 
 ```
-$ open "/Users/$(whoami)/Library/Application Support/Adobe/Fireworks CS6/Commands"
+$ open "~/Library/Application Support/Adobe/Fireworks CS6/Commands"
 ```
 
 ### Sketch 3
@@ -60,7 +60,7 @@ JSON to Layers.sketchpluginをダブルクリックしインストールして�
 
 ### レイヤーおよびサブレイヤー
 
-レイヤーおよびサブレイヤーは、Sketch 3のグループとして作成します。レイヤーが元になったグループには、"Click-through when selecting"を有効化します。
+レイヤーおよびサブレイヤーは、Sketch 3のグループとして作成します。レイヤーが元になったグループでは、"Click-through when selecting"を有効化します。
 
 ### 「エッジをぼかす」（塗り・線）
 
@@ -68,7 +68,7 @@ Fireworksの「エッジをぼかす」は変換されません。
 
 ### グラデーション
 
-直線・円形および円錐に対応していますが、円錐に関しては完全に変換できていません。また、それ以外は直線に変換します。
+直線はLinear Gradientとして、円形・楕円はRadial Gradientとして、円錐はAngular Gradientに変換します。ただし、Sketch 3上でAngular Gradientの中心を変更できないため、円錐に関しては完全に変換できていません。また、それ以外は直線に変換します。
 
 ### パターン
 
@@ -86,6 +86,8 @@ Fireworksの「エッジをぼかす」は変換されません。
 
 つまり線は「基本→エッジが堅い線（角）」または「基本→エッジが堅い線（丸）」以外は変換できません。「基本→エッジが堅い線（角）」相当でBorderを適用します。
 
+Fireworksでは破線の設定を線分と間隔の組み合わせを3つまで設定できますが、Sketch 3では2つまでしか設定できないため、3つめの設定は破棄します。
+
 ### ブレンドモード
 
 Sketch 3で適用できるブレンドモードのみ変換します。Sketch 3にない場合は、Normalを適用します。
@@ -101,7 +103,7 @@ Sketch 3で適用できるブレンドモードのみ変換します。Sketch 3�
   - 明るさ・コントラスト
   - 自動レベル補正
   - 色相・彩度
-- ベベルトエンボス
+- ベベルとエンボス
 - ぼかし
   - ぼかし
   - ぼかし（強）

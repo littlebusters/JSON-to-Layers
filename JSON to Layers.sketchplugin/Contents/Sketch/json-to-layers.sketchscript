@@ -1,20 +1,14 @@
 @import 'lib/const.js';
 
-fw2json.init = function ( doc ) {
+json2Layer.init = function ( doc ) {
 	this.doc = doc;
 }
 
 var onRun = function ( context ) {
 	log( 'Start Proccessing ------------------------------------------' );
-	fw2json.init( context.document );
-	var doc = fw2json.doc;
+	json2Layer.init( context.document );
+	var doc = json2Layer.doc;
 	var currentPage = doc.currentPage();
-
-	// var userJSON = [doc askForUserInput:"Paste your JSON here:" initialValue:""];
-	// if ( !userJSON ) return false;
-	// var json = userJSON;
-	// // var fwJSON = JSON.parse( json );
-	// var fwJSON = ( new Function( 'return ' + json ) )();
 
 	var openPanel = NSOpenPanel.openPanel();
 	    openPanel.setTitle( "Choose a JSON File" );
@@ -28,11 +22,25 @@ var onRun = function ( context ) {
 		var filePath = openPanel.URL().path();
 		var fwJSON = JSON.parse( NSString.stringWithContentsOfFile( filePath ) ); 
 		log( 'Open File from: ' + filePath );
-		fw2json.orgSymbols = fwJSON.symbols;
-		fw2json.resPath.basePath    = openPanel.directoryURL().path();
-		fw2json.resPath.exportedDir = fwJSON.resExportedDir;
+		json2Layer.orgSymbols = fwJSON.symbols;
+		json2Layer.resPath.basePath    = openPanel.directoryURL().path();
+		json2Layer.resPath.exportedDir = fwJSON.resExportedDir;
 	} else {
 		return false;
+	}
+
+	if ( 7 <= json2Layer.appVer.minor ) {
+		log( '-> Create Symbol Master' );
+		var masterPage = doc.addBlankPage();
+		doc.pages().objectAtIndex( 1 ).setName( 'Symbols' );
+		json2Layer.symbols = {};
+		for ( var symbolID in fwJSON.symbols ) {
+			json2Layer.symbolMaster.create( masterPage, fwJSON.symbols[symbolID], symbolID );
+		}
+		doc.setCurrentPage( doc.pages().objectAtIndex(0) );
+		log( '-> // Create Symbol Master' );
+	} else {
+		json2Layer.symbols = [];
 	}
 
 	var artboardPageOffset = 0; 
@@ -66,6 +74,36 @@ var onRun = function ( context ) {
 
 }
 
+json2Layer.symbolMaster = ( function () {
+	var artboardZeroPoint = { x: 0, y: 0 };
+
+	return {
+		create: function( parent, symbol, symbolID ) {
+			if ( !json2Layer.symbols[symbolID] ) {
+				log( '-> Create Symbol Master: ' + symbol.symbolName );
+				var artboard = MSArtboardGroup.new();
+				artboard.setName( unescape( symbol.symbolName ) );
+				artboard.frame().setX( artboardZeroPoint.x );
+				artboard.frame().setY( artboardZeroPoint.y );
+				artboard.frame().setWidth( symbol.width );
+				artboard.frame().setHeight( symbol.height );
+				artboardZeroPoint.x += symbol.width + 100;
+				parent.addLayers( [artboard] );
+
+				createElements( artboard, symbol.elements );
+
+				for (var i = artboard.layers().count() - 1; i >= 0; i--) {
+					artboard.layers().objectAtIndex( i ).frame().addX( -symbol.left );
+					artboard.layers().objectAtIndex( i ).frame().addY( -symbol.top );
+				}
+				json2Layer.symbols[symbolID] = artboard.convertToSymbol();
+				log( '   // Created symbol master: ' + symbol.symbolName );
+			}
+		}
+	};
+
+})();
+
 function createElements( parent, elems, isMask ) {
 	log( '-> Child Layer Proccessing' );
 	if ( !isMask ) isMask = false;
@@ -82,7 +120,7 @@ function createElements( parent, elems, isMask ) {
 					log( '     Type: Layer' );
 					shape = createGroup( parent, elems[i], true );
 					createElements( shape, elems[i].elems );
-					if ( 5 > fw2json.appVer.minor ) {
+					if ( 5 > json2Layer.appVer.minor ) {
 						shape.resizeRoot( false );
 					} else {
 						shape.resizeToFitChildrenWithOption( false );
@@ -131,7 +169,7 @@ function createElements( parent, elems, isMask ) {
 				addContextSettings( shape, elems[i] );
 				createElements( shape, elems[i].elements );
 
-				if ( 5 > fw2json.appVer.minor ) {
+				if ( 5 > json2Layer.appVer.minor ) {
 					shape.resizeRoot( false );
 				} else {
 					shape.resizeToFitChildrenWithOption( false );
@@ -140,23 +178,40 @@ function createElements( parent, elems, isMask ) {
 
 			case 'symbol':
 				log( '     Type: Layer Group - Symbol' );
-				var registeredSymbol = false;
-				var slc = 0;
-				for ( slc = fw2json.symbols.length - 1; slc >= 0; slc-- ) {
-					if ( fw2json.symbols[slc].fwSymbolID == elems[i].symbolID
-					     && fw2json.symbols[slc].width   == elems[i].width
-					     && fw2json.symbols[slc].height  == elems[i].height
-					) {
-						registeredSymbol = true;
-						break;
+				if ( 7 <= json2Layer.appVer.minor ) {
+					if ( json2Layer.symbols[elems[i].elements] ) {
+						var shape = json2Layer.symbols[elems[i].elements].newSymbolInstance();
+						actualParent.addLayers( [shape] );
+					} else {
+						while ( 'MSPage' != actualParent.class() ) {
+							actualParent = actualParent.parentObject();
+						}
+						json2Layer.symbolMaster.create( actualParent, json2Layer.orgSymbols[elems[i].elements], elems[i].elements );
+						var shape = json2Layer.symbols[elems[i].elements].newSymbolInstance();
+						parent.addLayers( [shape] );
 					}
-				}
-				if ( registeredSymbol ) {
-					var shape = addSymbol( actualParent, elems[i], slc );
+					shape.setName( elems[i].name );
+					shape.frame().setX( elems[i].left );
+					shape.frame().setY( elems[i].top );
 				} else {
-					var shape = createSymbol( actualParent, elems[i] );
+					var registeredSymbol = false;
+					var slc = 0;
+					for ( slc = json2Layer.symbols.length - 1; slc >= 0; slc-- ) {
+						if ( json2Layer.symbols[slc].fwSymbolID == elems[i].symbolID
+						     && json2Layer.symbols[slc].width   == elems[i].width
+						     && json2Layer.symbols[slc].height  == elems[i].height
+						) {
+							registeredSymbol = true;
+							break;
+						}
+					}
+					if ( registeredSymbol ) {
+						var shape = addSymbol( actualParent, elems[i], slc );
+					} else {
+						var shape = createSymbol( actualParent, elems[i] );
+					}
+					break;
 				}
-				break;
 			}
 
 		if ( null != elems[i].effectList ) {
@@ -164,7 +219,7 @@ function createElements( parent, elems, isMask ) {
 		}
 
 		if ( hasMask ) {
-			if ( 5 > fw2json.appVer.minor ) {
+			if ( 5 > json2Layer.appVer.minor ) {
 				actualParent.resizeRoot( false );
 			} else {
 				actualParent.resizeToFitChildrenWithOption( false );
@@ -178,7 +233,7 @@ function createElements( parent, elems, isMask ) {
 	if ( !isMask ) {
 		log( '!!! Finished createElements !!!');
 		log( '!!! resizeRoot() to ' + parent.name() );
-		if ( 5 > fw2json.appVer.minor ) {
+		if ( 5 > json2Layer.appVer.minor ) {
 			parent.resizeRoot( false );
 		} else {
 			parent.resizeToFitChildrenWithOption( false );
@@ -191,8 +246,8 @@ function createElements( parent, elems, isMask ) {
 function addContextSettings( shape, attrs ) {
 	var contextSettings = shape.style().contextSettings();
 	contextSettings.opacity = Math.round( attrs.opacity ) / 100;
-	if ( fw2json.blendMode[attrs.blendMode] ) {
-		contextSettings.blendMode = fw2json.blendMode[attrs.blendMode];
+	if ( json2Layer.blendMode[attrs.blendMode] ) {
+		contextSettings.blendMode = json2Layer.blendMode[attrs.blendMode];
 	}
 }
 
@@ -310,281 +365,289 @@ function addBorder( shape, attrs ) {
 function addEffects( shape, attrs ) {
 	for ( var i = attrs.length - 1; i >= 0; i-- ) {
 		log( '  Applied Effect: ' + attrs[i].name );
-		if ( 'ドロップシャドウ' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().shadows().addNewStylePart();
-			effect.blurRadius = attrs[i].ShadowBlur;
-			
-			var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
-			effect.offsetX = coord.x;
-			effect.offsetY = coord.y;
-			effect.spread = 0;
 
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
-			color.alpha = getOpacity( attrs[i].ShadowColor );
-			effect.color = color;
-		}
-		if ( 'シャドウ (内側)' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().innerShadows().addNewStylePart();
-			effect.blurRadius = attrs[i].ShadowBlur;
-			
-			var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
-			effect.offsetX = coord.x;
-			effect.offsetY = coord.y;
-			effect.spread = 0;
+		if ( attrs[i].EffectIsVisible ) {
+			switch ( attrs[i].name ) {
+				case 'drop shadow':
+					var effect = shape.style().shadows().addNewStylePart();
+					effect.blurRadius = attrs[i].ShadowBlur;
+					
+					var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
+					effect.offsetX = coord.x;
+					effect.offsetY = coord.y;
+					effect.spread = 0;
 
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
-			color.alpha = getOpacity( attrs[i].ShadowColor );
-			effect.color = color;
-		}
-		if ( 'グロー' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().shadows().addNewStylePart();
-			effect.blurRadius = attrs[i].MaskSoftness;
+					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
+					color.alpha = getOpacity( attrs[i].ShadowColor );
+					effect.color = color;
+					break;
+				case 'inner shadow':
+					var effect = shape.style().innerShadows().addNewStylePart();
+					effect.blurRadius = attrs[i].ShadowBlur;
+					
+					var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
+					effect.offsetX = coord.x;
+					effect.offsetY = coord.y;
+					effect.spread = 0;
 
-			effect.offsetX = 0;
-			effect.offsetY = 0;
-			effect.spread = attrs[i].GlowWidth;
-
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
-			color.alpha = attrs[i].BevelContrast / 100;
-			effect.color = color;
-		}
-		if ( '光彩 (内側)' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().innerShadows().addNewStylePart();
-			effect.blurRadius = attrs[i].MaskSoftness;
-			
-			effect.offsetX = 0;
-			effect.offsetY = 0;
-			effect.spread = attrs[i].GlowWidth;
-
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
-			color.alpha = attrs[i].BevelContrast / 100;
-			effect.color = color;
-		}
-		if ( 'ソリッドシャドウ…' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].color ) );
-			color.alpha = 1;
-
-			for ( var j = attrs[i].distance - 1; j >= 0; j-- ) {
-				var effect = shape.style().shadows().addNewStylePart();
-				effect.blurRadius = 0;
-				
-				var coord = getCoordfromTrigFunc( attrs[i].distance, attrs[i].angle );
-				effect.offsetX = coord.x;
-				effect.offsetY = coord.y;
-				effect.spread = 0;
-
-				effect.color = color;
-			};
-		}
-		if ( 'ぼかし (ガウス)...' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().blur();
-			effect.isEnabled = 1;
-			effect.type = 0;
-			effect.radius = attrs[i].gaussian_blur_radius;
-		}
-		if ( 'ぼかし (移動)...' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().blur();
-			effect.isEnabled = 1;
-			effect.type = 1;
-			effect.radius = attrs[i].motion_blur_distance;
-			effect.motionAngle = attrs[i].motion_blur_angle;
-		}
-		if ( 'ぼかし (ズーム)...' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().blur();
-			effect.isEnabled = 1;
-			effect.type = 2;
-			effect.radius = attrs[i].zoom_blur_amount;
-		}
-		if ( 'ノイズを追加...' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().fills().addNewStylePart();
-			effect.fillType = 5;
-			if ( attrs[i].add_noise_use_color ) {
-				effect.noiseIndex = 3;
-			} else {
-				effect.noiseIndex = 2;
-			}
-			effect.contextSettings().blendMode = 9;
-			effect.contextSettings().opacity = Math.round( attrs[i].add_noise_amount / 4 ) / 100;
-		}
-		if ( 'カラーの塗り' == attrs[i].name && attrs[i].EffectIsVisible ) {
-			var effect = shape.style().fills().addNewStylePart();
-			effect.setFillType(0);
-			var color = MSColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
-			color.alpha = attrs[i].Opacity / 100;
-			effect.contextSettings().blendMode = fw2json.solidFill[attrs[i].Blendmode - 1];
-			effect.color = color;
-		}
-		if ( 'Photoshop' == attrs[i].name.substr( 0, 9 ) ) {
-			// log( '  PsLE:' );
-			for ( var j = fw2json.PsLE.length - 1; j >= 0; j-- ) {
-				// log( '    Flag: ' + fw2json.PsLE[j] + ': ' + attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) );
-				if( attrs[i][fw2json.PsLE[j]] && '1' == attrs[i][fw2json.PsLE[j]].substring( 0, 1 ) ) {
-					// log( '      isEnabled:' );
-					var psleAttrs = attrs[i][fw2json.PsLE[j]].split( '&' );
-					// log( '      psleAttrs:' );
-					// log( psleAttrs );
-					switch ( fw2json.PsLE[j] ) {
-						case 'satin':
-							break;
-						case 'dropShadow':
+					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
+					color.alpha = getOpacity( attrs[i].ShadowColor );
+					effect.color = color;
+					break;
+				case 'glow':
+					switch( attrs[i].BevelType + '' ) {
+						case '4':
 							var effect = shape.style().shadows().addNewStylePart();
-							effect.blurRadius = psleAttrs[6];
-							
-							var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
-							effect.offsetX = coord.x;
-							effect.offsetY = coord.y;
-							effect.spread = psleAttrs[7];
+							effect.blurRadius = attrs[i].MaskSoftness;
 
-							var originColor = psleAttrs[11].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = psleAttrs[1] / 100;
-							effect.color = color;
-							break;
-						case 'innerShadow':
-							var effect = shape.style().innerShadows().addNewStylePart();
-							effect.blurRadius = psleAttrs[6];
-							
-							var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
-							effect.offsetX = coord.x;
-							effect.offsetY = coord.y;
-							effect.spread = psleAttrs[7];
-
-							var originColor = psleAttrs[11].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = psleAttrs[1] / 100;
-							effect.color = color;
-							break;
-						case 'outerGlow':
-							var effect = shape.style().shadows().addNewStylePart();
-							var subAttrs = psleAttrs[3].split( ':' );
-							effect.blurRadius = subAttrs[2];
-							
 							effect.offsetX = 0;
 							effect.offsetY = 0;
-							effect.spread = subAttrs[1];
+							effect.spread = attrs[i].GlowWidth;
 
-							var originColor = psleAttrs[5].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = subAttrs[0] / 100;
+							var color = MSColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
+							color.alpha = attrs[i].BevelContrast / 100;
 							effect.color = color;
-
-							var blendMode = psleAttrs[2];
-							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
-							break;
-						case 'innerGlow':
-							var effect = shape.style().innerShadows().addNewStylePart();
-							var subAttrs = psleAttrs[3].split( ':' );
-							effect.blurRadius = subAttrs[2];
-							
-							effect.offsetX = 0;
-							effect.offsetY = 0;
-							effect.spread = subAttrs[1];
-
-							var originColor = psleAttrs[5].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = subAttrs[0] / 100;
-							effect.color = color;
-							
-							var blendMode = psleAttrs[2];
-							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
-							break;
-						case 'solidFill':
-							var effect = shape.style().fills().addNewStylePart();
-							effect.setFillType(0);
-							var originColor = psleAttrs[3].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = psleAttrs[1] / 100;
-							var blendMode = psleAttrs[2];
-							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
-							effect.color = color;
-							break;
-						case 'gradientFill':
-							var effect = shape.style().fills().addNewStylePart();
-							effect.setFillType(1);
-							// log( '      opacity: ' + ( psleAttrs[3] ) );
-							// log( '      opacity: ' + ( psleAttrs[3] / 100 ) );
-							effect.contextSettings().opacity = psleAttrs[3] / 100;
-							var coord = getCoordfromTrigFunc( 1, psleAttrs[4], true );
-							var coordStretch = ( Math.abs( coord.x ) > Math.abs( coord.y ) ) ? 1 / Math.abs( coord.x ) : 1 / Math.abs( coord.y );
-							coord.x = coord.x * coordStretch;
-							coord.y = coord.y * coordStretch;
-							var startX = 0;
-							var startY = 0;
-							// offset coordinate
-							if ( 0 > coord.x ) {
-								startX = startX + Math.abs( coord.x );
-								coord.x = 0;
-							}
-							if ( 0 > coord.y ) {
-								startY = startY + Math.abs( coord.y );
-								coord.y = 0;
-							}
-							effect.gradient().setPoint_atIndex_( CGPointMake( startX, startY ), 0 )
-							effect.gradient().setPoint_atIndex_( CGPointMake( coord.x, coord.y ), 1 )
-							break;
-						case 'patternFill':
-							break;
-						case 'bevelEmboss':
-							break;
-						case 'stroke':
-							var effect = shape.style().borders().addNewStylePart();
-							var originColor = psleAttrs[4].split( ';' );
-							var color = MSColor.colorWithRGBADictionary( {
-								r: bit2Percent( originColor[1] ), 
-								g: bit2Percent( originColor[2] ), 
-								b: bit2Percent( originColor[3] )
-							} );
-							color.alpha = psleAttrs[1] / 100;
-							effect.color = color;
-							effect.thickness = psleAttrs[2];
-							var blendMode = psleAttrs[3];
-							effect.contextSettings().blendMode = fw2json.blendMode[blendMode];
-							switch ( psleAttrs[5] ) {
-								case 'centeredFrame':
-									effect.setPosition( 0 );
-									break; 
-								case 'insetFrame':
-									effect.setPosition( 1 );
-									break; 
-								case 'outsetFrame':
-									effect.setPosition( 2 );
-									break; 
-								default:
-									effect.setPosition( 0 );
-									break; 
-							}
 							break;
 					}
-				}
-			};
+					break;
+				case 'inner glow':
+					var effect = shape.style().innerShadows().addNewStylePart();
+					effect.blurRadius = attrs[i].MaskSoftness;
+					
+					effect.offsetX = 0;
+					effect.offsetY = 0;
+					effect.spread = attrs[i].GlowWidth;
+
+					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
+					color.alpha = attrs[i].BevelContrast / 100;
+					effect.color = color;
+					break;
+				case 'solid shadow':
+					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].color ) );
+					color.alpha = 1;
+
+					for ( var j = attrs[i].distance - 1; j >= 0; j-- ) {
+						var effect = shape.style().shadows().addNewStylePart();
+						effect.blurRadius = 0;
+						
+						var coord = getCoordfromTrigFunc( attrs[i].distance, attrs[i].angle );
+						effect.offsetX = coord.x * (( j + 1 ) / attrs[i].distance );
+						effect.offsetY = coord.y * (( j + 1 ) / attrs[i].distance );
+						effect.spread = 0;
+
+						effect.color = color;
+					};
+					break;
+				case 'gaussian blur':
+					var effect = shape.style().blur();
+					effect.isEnabled = 1;
+					effect.type = 0;
+					effect.radius = attrs[i].gaussian_blur_radius;
+					break;
+				case 'motion blur':
+					var effect = shape.style().blur();
+					effect.isEnabled = 1;
+					effect.type = 1;
+					effect.radius = attrs[i].motion_blur_distance / 2;
+					effect.motionAngle = attrs[i].motion_blur_angle;
+					break;
+				case 'zoom blur':
+					var effect = shape.style().blur();
+					effect.isEnabled = 1;
+					effect.type = 2;
+					effect.radius = attrs[i].zoom_blur_amount / 2;
+					break;
+				case 'add noise':
+					var effect = shape.style().fills().addNewStylePart();
+					effect.fillType = 5;
+					if ( attrs[i].add_noise_use_color ) {
+						effect.noiseIndex = 3;
+					} else {
+						effect.noiseIndex = 2;
+					}
+					effect.contextSettings().blendMode = 9;
+					effect.contextSettings().opacity = Math.round( attrs[i].add_noise_amount / 4 ) / 100;
+					break;
+				case 'color fill':
+					var effect = shape.style().fills().addNewStylePart();
+					effect.setFillType(0);
+					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
+					color.alpha = attrs[i].Opacity / 100;
+					effect.contextSettings().blendMode = json2Layer.solidFill[attrs[i].Blendmode];
+					effect.color = color;
+					break;
+				case 'photoshop live effects':
+					// log( '  PsLE:' );
+					for ( var j = json2Layer.PsLE.length - 1; j >= 0; j-- ) {
+						// log( '    Flag: ' + json2Layer.PsLE[j] + ': ' + attrs[i][json2Layer.PsLE[j]].substring( 0, 1 ) );
+						if( attrs[i][json2Layer.PsLE[j]] && '1' == attrs[i][json2Layer.PsLE[j]].substring( 0, 1 ) ) {
+							// log( '      isEnabled:' );
+							var psleAttrs = attrs[i][json2Layer.PsLE[j]].split( '&' );
+							// log( '      psleAttrs:' );
+							// log( psleAttrs );
+							switch ( json2Layer.PsLE[j] ) {
+								case 'satin':
+									break;
+								case 'dropShadow':
+									var effect = shape.style().shadows().addNewStylePart();
+									effect.blurRadius = psleAttrs[6];
+									
+									var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
+									effect.offsetX = coord.x;
+									effect.offsetY = coord.y;
+									effect.spread = psleAttrs[7];
+
+									var originColor = psleAttrs[11].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = psleAttrs[1] / 100;
+									effect.color = color;
+									break;
+								case 'innerShadow':
+									var effect = shape.style().innerShadows().addNewStylePart();
+									effect.blurRadius = psleAttrs[6];
+									
+									var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
+									effect.offsetX = coord.x;
+									effect.offsetY = coord.y;
+									effect.spread = psleAttrs[7];
+
+									var originColor = psleAttrs[11].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = psleAttrs[1] / 100;
+									effect.color = color;
+									break;
+								case 'outerGlow':
+									var effect = shape.style().shadows().addNewStylePart();
+									var subAttrs = psleAttrs[3].split( ':' );
+									effect.blurRadius = subAttrs[2];
+									
+									effect.offsetX = 0;
+									effect.offsetY = 0;
+									effect.spread = subAttrs[1];
+
+									var originColor = psleAttrs[5].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = subAttrs[0] / 100;
+									effect.color = color;
+
+									var blendMode = psleAttrs[2];
+									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
+									break;
+								case 'innerGlow':
+									var effect = shape.style().innerShadows().addNewStylePart();
+									var subAttrs = psleAttrs[3].split( ':' );
+									effect.blurRadius = subAttrs[2];
+									
+									effect.offsetX = 0;
+									effect.offsetY = 0;
+									effect.spread = subAttrs[1];
+
+									var originColor = psleAttrs[5].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = subAttrs[0] / 100;
+									effect.color = color;
+									
+									var blendMode = psleAttrs[2];
+									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
+									break;
+								case 'solidFill':
+									var effect = shape.style().fills().addNewStylePart();
+									effect.setFillType(0);
+									var originColor = psleAttrs[3].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = psleAttrs[1] / 100;
+									var blendMode = psleAttrs[2];
+									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
+									effect.color = color;
+									break;
+								case 'gradientFill':
+									var effect = shape.style().fills().addNewStylePart();
+									effect.setFillType(1);
+									// log( '      opacity: ' + ( psleAttrs[3] ) );
+									// log( '      opacity: ' + ( psleAttrs[3] / 100 ) );
+									effect.contextSettings().opacity = psleAttrs[3] / 100;
+									var coord = getCoordfromTrigFunc( 1, psleAttrs[4], true );
+									var coordStretch = ( Math.abs( coord.x ) > Math.abs( coord.y ) ) ? 1 / Math.abs( coord.x ) : 1 / Math.abs( coord.y );
+									coord.x = coord.x * coordStretch;
+									coord.y = coord.y * coordStretch;
+									var startX = 0;
+									var startY = 0;
+									// offset coordinate
+									if ( 0 > coord.x ) {
+										startX = startX + Math.abs( coord.x );
+										coord.x = 0;
+									}
+									if ( 0 > coord.y ) {
+										startY = startY + Math.abs( coord.y );
+										coord.y = 0;
+									}
+									effect.gradient().setPoint_atIndex_( CGPointMake( startX, startY ), 0 )
+									effect.gradient().setPoint_atIndex_( CGPointMake( coord.x, coord.y ), 1 )
+									break;
+								case 'patternFill':
+									break;
+								case 'bevelEmboss':
+									break;
+								case 'stroke':
+									var effect = shape.style().borders().addNewStylePart();
+									var originColor = psleAttrs[4].split( ';' );
+									var color = MSColor.colorWithRGBADictionary( {
+										r: bit2Percent( originColor[1] ), 
+										g: bit2Percent( originColor[2] ), 
+										b: bit2Percent( originColor[3] )
+									} );
+									color.alpha = psleAttrs[1] / 100;
+									effect.color = color;
+									effect.thickness = psleAttrs[2];
+									var blendMode = psleAttrs[3];
+									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
+									switch ( psleAttrs[5] ) {
+										case 'centeredFrame':
+											effect.setPosition( 0 );
+											break; 
+										case 'insetFrame':
+											effect.setPosition( 1 );
+											break; 
+										case 'outsetFrame':
+											effect.setPosition( 2 );
+											break; 
+										default:
+											effect.setPosition( 0 );
+											break; 
+									}
+									break;
+							}
+						}
+					};
+			}
 		}
 	};
 }
 
 function importBitmap( parent, attrs, isMask ) {
 	var filePath = attrs.uri;
-	var splitPath = filePath.split( fw2json.resPath.basePath );
-	filePath = fw2json.resPath.basePath + splitPath[1];
+	var splitPath = filePath.split( json2Layer.resPath.basePath );
+	filePath = json2Layer.resPath.basePath + splitPath[1];
 
 	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
 	bitmap = setFrame( bitmap, attrs, ( isMask ? parent : false ) );
@@ -669,6 +732,12 @@ function createText( parent, attrs, isMask ) {
 		text.addAttribute_value_( NSParagraphStyleAttributeName, pragraph );
 	}
 	text = setFrame( text, attrs, ( isMask ? parent : false ) );
+
+	// Ajust bounding
+	if ( 6 <= json2Layer.appVer.minor ) {
+		text.frame().y = text.frame().y() - Math.round( ( attrs.leading - attrs.fontSize ) / 4 );
+		text.frame().height = attrs.leading;
+	}
 	
 	switch ( attrs.alignment ) {
 		case 'left':
@@ -829,21 +898,21 @@ function createSymbol( parent, attrs ) {
 	var shape = createGroup( parent, attrs );
 	shape.setName( unescape( attrs.symbolName ));
 	addContextSettings( shape, attrs );
-	createElements( shape, fw2json.orgSymbols[attrs.elements].elements );
-	if ( 5 > fw2json.appVer.minor ) {
+	createElements( shape, json2Layer.orgSymbols[attrs.elements].elements );
+	if ( 5 > json2Layer.appVer.minor ) {
 		shape.resizeRoot( false );
 	} else {
 		shape.resizeToFitChildrenWithOption( false );
 	}
 
-	var symbols = fw2json.doc.documentData().layerSymbols();
+	var symbols = json2Layer.doc.documentData().layerSymbols();
 	symbols.addSymbolWithName_firstInstance( attrs.symbolName, shape );
 
 	var shape = parent.layers().objectAtIndex( parent.layers().count() - 1 );
 	shape.frame().x = attrs.left;
 	shape.frame().y = attrs.top;
 
-	fw2json.symbols.push( 
+	json2Layer.symbols.push( 
 		{ 
 			fwSymbolID: attrs.symbolID,
 			width: attrs.width, 
@@ -857,7 +926,7 @@ function createSymbol( parent, attrs ) {
 
 function addSymbol( parent, attrs, symbolIndex ) {
 	log( '           Exist Symbol' );
-	var symbol = fw2json.doc.documentData().layerSymbols().symbolAtIndex( symbolIndex );
+	var symbol = json2Layer.doc.documentData().layerSymbols().symbolAtIndex( symbolIndex );
 	var shape = symbol.newInstance();
 	shape.setName( unescape( attrs.name ));
 	shape.frame().x = attrs.left;
@@ -892,15 +961,15 @@ function addGuideline ( parent, guides, grid ) {
 }
 
 function addTextureFill( shape, attrs ) {
-	var splitPath = attrs.fillTexture.filePath.split( fw2json.resPath.basePath );
-	var filePath = fw2json.resPath.basePath + splitPath[1];
+	var splitPath = attrs.fillTexture.filePath.split( json2Layer.resPath.basePath );
+	var filePath = json2Layer.resPath.basePath + splitPath[1];
 	var texturePath = NSImage.new().initWithContentsOfFile( filePath );
 	var textureFill = shape.style().fills().addNewStylePart();
 	
 	textureFill.setFillType( 4 );
 	textureFill.setPatternFillType( 0 );
 
-	if ( 5 > fw2json.appVer.minor ) {
+	if ( 5 > json2Layer.appVer.minor ) {
 		var fillCollection = textureFill.documentData().images();
 		textureFill.setPatternImage_collection_( texturePath, fillCollection );
 	} else {
@@ -909,12 +978,12 @@ function addTextureFill( shape, attrs ) {
 
 	var contextSettings = textureFill.contextSettings();
 	contextSettings.opacity = attrs.fill.textureBlend / 100;
-	contextSettings.blendMode = fw2json.blendMode['screen'];
+	contextSettings.blendMode = json2Layer.blendMode['screen'];
 }
 
 function addPatternFill( shape, attrs ) {
-	var splitPath = attrs.split( fw2json.resPath.basePath );
-	var filePath = fw2json.resPath.basePath + splitPath[1];
+	var splitPath = attrs.split( json2Layer.resPath.basePath );
+	var filePath = json2Layer.resPath.basePath + splitPath[1];
 	var patternPath = NSImage.new().initWithContentsOfFile( filePath );
 	var shapeStyle = shape.style();
 	var shapeFill = shapeStyle.fill();
@@ -922,7 +991,7 @@ function addPatternFill( shape, attrs ) {
 	shapeFill.setFillType( 4 );
 	shapeFill.setPatternFillType( 1 );
 
-	if ( 5 > fw2json.appVer.minor ) {
+	if ( 5 > json2Layer.appVer.minor ) {
 		var fillCollection = shapeFill.documentData().images();
 		shapeFill.setPatternImage_collection_( patternPath, fillCollection );
 	} else {
@@ -932,29 +1001,9 @@ function addPatternFill( shape, attrs ) {
 }
 
 function addGradientFill( shape, pathAttrs ) {
-	var shapeStyle = shape.style();
-	log( '>>> addGradientFill' );
-	// shapeStyle.fills().addNewStylePart();
-	var shapeFill = shapeStyle.fill();
-	shapeFill.setFillType( 1 ); // gradient fill
+	log( '>>> addGradientFill: ' + pathAttrs.fill.gradient.gradientType );
+
 	var attrs = pathAttrs.fill.gradient;
-
-	var gradient = shapeFill.gradient();
-	switch ( attrs.gradientType ) {
-		case 'linear':
-			gradient.setGradientType( 0 );
-			break;
-		case 'radial':
-			gradient.setGradientType( 1 );
-			break;
-		case 'conical':
-			gradient.setGradientType( 2 );
-			break;
-		default:
-			gradient.setGradientType( 0 );
-			break;
-	}
-
 	var gradientNodes = attrs.nodes.concat( attrs.opacityNodes );
 
 	// sort gradient stops by position
@@ -1038,6 +1087,28 @@ function addGradientFill( shape, pathAttrs ) {
 		}
 	}
 
+	var shapeStyle = shape.style();
+	// shapeStyle.fills().addNewStylePart();
+	var shapeFill = shapeStyle.fill();
+	shapeFill.setFillType( 1 ); // gradient fill
+
+	var gradient = shapeFill.gradient();
+	switch ( attrs.gradientType ) {
+		case 'linear':
+			gradient.setGradientType( 0 );
+			break;
+		case 'radial':
+		case 'elliptical':
+			gradient.setGradientType( 1 );
+			break;
+		case 'conical':
+			gradient.setGradientType( 2 );
+			break;
+		default:
+			gradient.setGradientType( 0 );
+			break;
+	}
+
 	var orignPoint = optimazedPoints.length;
 	for ( var i = 0; i < orignPoint; i++ ) {
 		if ( 0 != optimazedPoints[i].position && 1 != optimazedPoints[i].position ) {
@@ -1056,11 +1127,41 @@ function addGradientFill( shape, pathAttrs ) {
 	var shapeH = shape.frame().height();
 	var startX = ( pathAttrs.fillHandle1.x - shapeX ) / shapeW;
 	var startY = ( pathAttrs.fillHandle1.y - shapeY ) / shapeH;
-	gradient.setPoint_atIndex_( CGPointMake( startX, startY ), 0 );
+	var endX = ( pathAttrs.fillHandle2.x - shapeX ) / shapeW;
+	var endY = ( pathAttrs.fillHandle2.y - shapeY ) / shapeH;
+	if ( 'elliptical' == attrs.gradientType ) {
+		var handlePoint1x = pathAttrs.fillHandle2.x - pathAttrs.fillHandle1.x;
+		var handlePoint1y = pathAttrs.fillHandle2.y - pathAttrs.fillHandle1.y;
+		if ( 0 != handlePoint1x && 0 != handlePoint1y ) {
+			var handle1Length = Math.sqrt( handlePoint1x * handlePoint1x + handlePoint2y * handlePoint2y );
+		} else {
+			var handle1Length = ( 0 != handlePoint1x ) ? handlePoint1x : handlePoint1y;
+		}
+		var handlePoint2x = pathAttrs.fillHandle3.x - pathAttrs.fillHandle1.x;
+		var handlePoint2y = pathAttrs.fillHandle3.y - pathAttrs.fillHandle1.y;
+		if ( 0 != handlePoint2x && 0 != handlePoint2y ) {
+			var handle2Length = Math.sqrt( handlePoint2x * handlePoint2x + handlePoint2y * handlePoint2y );
+		} else {
+			var handle2Length = ( 0 != handlePoint2x ) ? handlePoint2x : handlePoint2y;
+		}
+		gradient.elipseLength = Math.abs( handle2Length / handle1Length );
+	}
 	if ( 'conical' != attrs.gradientType ) {
-		var endX = ( pathAttrs.fillHandle2.x - shapeX ) / shapeW;
-		var endY = ( pathAttrs.fillHandle2.y - shapeY ) / shapeH;
+		gradient.from = CGPointMake( startX, startY );
+		gradient.setPoint_atIndex_( CGPointMake( startX, startY ), 0 );
 		gradient.setPoint_atIndex_( CGPointMake( endX, endY ), orignPoint - 1 );
+	} else {
+		for ( var i = 0; i < gradient.stops().length(); i++ ) {
+			gradient.stops().objectAtIndex( i ).position = gradient.stops().objectAtIndex( i ).position() / 2;
+		}
+		var originalStops = gradient.stops().length();
+		for ( var i = 0; i < originalStops; i++ ) {
+			if ( 0 != gradient.stops().objectAtIndex( i ).position() 
+				 && 0.5 != gradient.stops().objectAtIndex( i ).position() ) {
+				gradient.addStopAtLength( 1 - gradient.stops().objectAtIndex( i ).position() );
+				gradient.setColor_atIndex_( gradient.stops().objectAtIndex( i ).color(), gradient.stops().length() - 1 );
+			}
+		}
 	}
 }
 
