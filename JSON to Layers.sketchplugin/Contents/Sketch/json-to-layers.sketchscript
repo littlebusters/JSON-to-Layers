@@ -282,11 +282,36 @@ function setFrame( targetLayer, attrs, parent ) {
 	return targetLayer;
 }
 
+function addStylePart( shape, type ) {
+
+	if ( 8 <= json2Layer.appVer.minor ) {
+		var stylePart = shape.style().addStylePartOfType( type );
+	} else {
+		switch( type ) {
+			case 0:
+				var stylePart = shape.style().fills().addNewStylePart();
+				break;
+			case 1:
+				var stylePart = shape.style().borders().addNewStylePart();
+				break;
+			case 2:
+				var stylePart = shape.style().shadows().addNewStylePart();
+				break;
+			case 3:
+				var stylePart = shape.style().innerShadows().addNewStylePart();
+		}
+		
+	}
+	
+
+	return stylePart;
+}
+
 function addPathAttributes( shape, attrs, maskMode ) {
 	maskMode = maskMode || false;
 
 	if ( null != attrs.fill ) {
-		var fill = shape.style().fills().addNewStylePart();
+		var fill = addStylePart( shape, 0 );
 
 		if ( 'gradient' == attrs.fillType ) {
 			addGradientFill( shape, attrs );
@@ -315,10 +340,10 @@ function addPathAttributes( shape, attrs, maskMode ) {
 }
 
 function addBorder( shape, attrs ) {
-	var border = shape.style().borders().addNewStylePart();
+	var border = addStylePart( shape, 1 );
 	var color = MSColor.colorWithSVGString( getHexColor( attrs.brushColor ) );
 	color.alpha = getOpacity( attrs.brushColor );
-	border.color = color;
+	border.setColor( color );
 	border.thickness = attrs.brush.diameter;
 	switch ( attrs.brushPlacement ) {
 		case 'center':
@@ -369,7 +394,7 @@ function addEffects( shape, attrs ) {
 		if ( attrs[i].EffectIsVisible ) {
 			switch ( attrs[i].name ) {
 				case 'drop shadow':
-					var effect = shape.style().shadows().addNewStylePart();
+					var effect = addStylePart( shape, 2 );
 					effect.blurRadius = attrs[i].ShadowBlur;
 					
 					var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
@@ -382,7 +407,7 @@ function addEffects( shape, attrs ) {
 					effect.color = color;
 					break;
 				case 'inner shadow':
-					var effect = shape.style().innerShadows().addNewStylePart();
+					var effect = addStylePart( shape, 3 );
 					effect.blurRadius = attrs[i].ShadowBlur;
 					
 					var coord = getCoordfromTrigFunc( attrs[i].ShadowDistance, attrs[i].ShadowAngle );
@@ -397,7 +422,7 @@ function addEffects( shape, attrs ) {
 				case 'glow':
 					switch( attrs[i].BevelType + '' ) {
 						case '4':
-							var effect = shape.style().shadows().addNewStylePart();
+							var effect = addStylePart( shape, 2 );
 							effect.blurRadius = attrs[i].MaskSoftness;
 
 							effect.offsetX = 0;
@@ -411,7 +436,7 @@ function addEffects( shape, attrs ) {
 					}
 					break;
 				case 'inner glow':
-					var effect = shape.style().innerShadows().addNewStylePart();
+					var effect = addStylePart( shape, 3 );
 					effect.blurRadius = attrs[i].MaskSoftness;
 					
 					effect.offsetX = 0;
@@ -427,7 +452,7 @@ function addEffects( shape, attrs ) {
 					color.alpha = 1;
 
 					for ( var j = attrs[i].distance - 1; j >= 0; j-- ) {
-						var effect = shape.style().shadows().addNewStylePart();
+						var effect = addStylePart( shape, 2 );
 						effect.blurRadius = 0;
 						
 						var coord = getCoordfromTrigFunc( attrs[i].distance, attrs[i].angle );
@@ -458,7 +483,7 @@ function addEffects( shape, attrs ) {
 					effect.radius = attrs[i].zoom_blur_amount / 2;
 					break;
 				case 'add noise':
-					var effect = shape.style().fills().addNewStylePart();
+					var effect = addStylePart( shape, 0 );
 					effect.fillType = 5;
 					if ( attrs[i].add_noise_use_color ) {
 						effect.noiseIndex = 3;
@@ -469,7 +494,7 @@ function addEffects( shape, attrs ) {
 					effect.contextSettings().opacity = Math.round( attrs[i].add_noise_amount / 4 ) / 100;
 					break;
 				case 'color fill':
-					var effect = shape.style().fills().addNewStylePart();
+					var effect = addStylePart( shape, 0 );
 					effect.setFillType(0);
 					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
 					color.alpha = attrs[i].Opacity / 100;
@@ -489,7 +514,7 @@ function addEffects( shape, attrs ) {
 								case 'satin':
 									break;
 								case 'dropShadow':
-									var effect = shape.style().shadows().addNewStylePart();
+									var effect = addStylePart( shape, 2 );
 									effect.blurRadius = psleAttrs[6];
 									
 									var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
@@ -507,7 +532,7 @@ function addEffects( shape, attrs ) {
 									effect.color = color;
 									break;
 								case 'innerShadow':
-									var effect = shape.style().innerShadows().addNewStylePart();
+									var effect = addStylePart( shape, 3 );
 									effect.blurRadius = psleAttrs[6];
 									
 									var coord = getCoordfromTrigFunc( psleAttrs[5], psleAttrs[3], true );
@@ -525,7 +550,7 @@ function addEffects( shape, attrs ) {
 									effect.color = color;
 									break;
 								case 'outerGlow':
-									var effect = shape.style().shadows().addNewStylePart();
+									var effect = addStylePart( shape, 2 );
 									var subAttrs = psleAttrs[3].split( ':' );
 									effect.blurRadius = subAttrs[2];
 									
@@ -546,7 +571,7 @@ function addEffects( shape, attrs ) {
 									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
 									break;
 								case 'innerGlow':
-									var effect = shape.style().innerShadows().addNewStylePart();
+									var effect = addStylePart( shape, 3 );
 									var subAttrs = psleAttrs[3].split( ':' );
 									effect.blurRadius = subAttrs[2];
 									
@@ -567,7 +592,7 @@ function addEffects( shape, attrs ) {
 									effect.contextSettings().blendMode = json2Layer.blendMode[blendMode];
 									break;
 								case 'solidFill':
-									var effect = shape.style().fills().addNewStylePart();
+									var effect = addStylePart( shape, 0 );
 									effect.setFillType(0);
 									var originColor = psleAttrs[3].split( ';' );
 									var color = MSColor.colorWithRGBADictionary( {
@@ -581,7 +606,7 @@ function addEffects( shape, attrs ) {
 									effect.color = color;
 									break;
 								case 'gradientFill':
-									var effect = shape.style().fills().addNewStylePart();
+									var effect = addStylePart( shape, 0 );
 									effect.setFillType(1);
 									// log( '      opacity: ' + ( psleAttrs[3] ) );
 									// log( '      opacity: ' + ( psleAttrs[3] / 100 ) );
@@ -609,7 +634,7 @@ function addEffects( shape, attrs ) {
 								case 'bevelEmboss':
 									break;
 								case 'stroke':
-									var effect = shape.style().borders().addNewStylePart();
+									var effect = addStylePart( shape, 1 );
 									var originColor = psleAttrs[4].split( ';' );
 									var color = MSColor.colorWithRGBADictionary( {
 										r: bit2Percent( originColor[1] ), 
@@ -961,10 +986,11 @@ function addGuideline ( parent, guides, grid ) {
 }
 
 function addTextureFill( shape, attrs ) {
-	var splitPath = attrs.fillTexture.filePath.split( json2Layer.resPath.basePath );
+	log( '     -> addTextureFill' );
+	var splitPath = attrs.fillTexture.filePath.split( escape( json2Layer.resPath.basePath ));
 	var filePath = json2Layer.resPath.basePath + splitPath[1];
 	var texturePath = NSImage.new().initWithContentsOfFile( filePath );
-	var textureFill = shape.style().fills().addNewStylePart();
+	var textureFill = addStylePart( shape, 0 );
 	
 	textureFill.setFillType( 4 );
 	textureFill.setPatternFillType( 0 );
@@ -982,7 +1008,8 @@ function addTextureFill( shape, attrs ) {
 }
 
 function addPatternFill( shape, attrs ) {
-	var splitPath = attrs.split( json2Layer.resPath.basePath );
+	log( '     -> addPatternFill' );
+	var splitPath = attrs.split( escape( json2Layer.resPath.basePath ));
 	var filePath = json2Layer.resPath.basePath + splitPath[1];
 	var patternPath = NSImage.new().initWithContentsOfFile( filePath );
 	var shapeStyle = shape.style();
