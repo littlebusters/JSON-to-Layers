@@ -11,6 +11,27 @@ var onRun = function ( context ) {
 	var doc = json2Layer.doc;
 	var currentPage = doc.currentPage();
 
+	var fwJSON = loadJSON();
+	if( !fwJSON ) return false;
+
+	json2Layer.symbolMaster.init( doc, fwJSON );
+
+	for ( var i = 0; i < fwJSON.pages.length; i++ ) {
+		log( 'Page: ' + fwJSON.pages[i].pageName + ' //////////////////////////////////////////' );
+		for ( var stateIndex = 0; stateIndex < fwJSON.pages[i].frames.length; stateIndex++ ) {
+			log( 'Frame (state): ' + stateIndex + ' ------------------------------------------>' );
+			var artboard = json2Layer.artboards.create( fwJSON.pages[i], currentPage, fwJSON.documentSetting.grid );
+			fwJSON.pages[i].frames[stateIndex].topLayers.reverse();
+			createElements( artboard, fwJSON.pages[i].frames[stateIndex].topLayers );
+		};
+		json2Layer.artboards.offset( fwJSON.pages[i].width );
+	}
+
+	log( '------------------------------------------ Close Proccessing' );
+
+}
+
+function loadJSON() {
 	var openPanel = NSOpenPanel.openPanel();
 	    openPanel.setTitle( "Choose a JSON File" );
 	    openPanel.setCanCreateDirectories = false;
@@ -27,58 +48,59 @@ var onRun = function ( context ) {
 		json2Layer.resPath.basePath    = openPanel.directoryURL().path();
 		json2Layer.resPath.exportedDir = fwJSON.resExportedDir;
 	} else {
-		return false;
+		var fwJSON = false;
 	}
 
-	if ( 7 <= json2Layer.appVer.minor ) {
-		log( '-> Create Symbol Master' );
-		var masterPage = doc.addBlankPage();
-		doc.pages().objectAtIndex( 1 ).setName( 'Symbols' );
-		json2Layer.symbols = {};
-		for ( var symbolID in fwJSON.symbols ) {
-			json2Layer.symbolMaster.create( masterPage, fwJSON.symbols[symbolID], symbolID );
-		}
-		doc.setCurrentPage( doc.pages().objectAtIndex(0) );
-		log( '-> // Create Symbol Master' );
-	} else {
-		json2Layer.symbols = [];
-	}
+	return fwJSON;
+}
 
-	var artboardPageOffset = 0; 
-	var artboardStateOffset = 0; 
-	for ( var i = 0; i < fwJSON.pages.length; i++ ) {
-		log( 'Page: ' + fwJSON.pages[i].pageName + ' //////////////////////////////////////////' );
-		for ( var stateIndex = 0; stateIndex < fwJSON.pages[i].frames.length; stateIndex++ ) {
-			log( 'Frame (state): ' + stateIndex + ' ------------------------------------------>' );
+json2Layer.artboards = ( function () {
+	var artboardPageOffset  = 0; 
+	var artboardStateOffset = 0;
+
+	return {
+		create: function( _page, currentPage, _grid ) {
 			var artboard = MSArtboardGroup.new();
-			artboard.setName( unescape( fwJSON.pages[i].pageName ));
+			artboard.setName( unescape( _page.pageName ));
 			artboard.frame().setX( artboardPageOffset );
 			artboard.frame().setY( artboardStateOffset );
-			artboard.frame().setWidth( fwJSON.pages[i].width );
-			artboard.frame().setHeight( fwJSON.pages[i].height );
-			artboardStateOffset = artboardStateOffset + fwJSON.pages[i].height + 100;
-			// currentPage.addLayer( artboard );
-			currentPage.addLayers( NSArray.arrayWithObjects( artboard ) );
-			var artboards = doc.currentPage().artboards();
+			artboard.frame().setWidth ( _page.width );
+			artboard.frame().setHeight( _page.height );
+			artboardStateOffset += _page.height + 100;
+			currentPage.addLayers( [artboard] );
 
-			setGrid( artboard, fwJSON.documentSetting.grid );
-			addGuideline( artboard, fwJSON.pages[i].guides, fwJSON.documentSetting.grid.gridOrigin );
-			fwJSON.pages[i].frames[stateIndex].topLayers.reverse();
-			createElements( artboard, fwJSON.pages[i].frames[stateIndex].topLayers );
-			// log( fwJSON.pages[i].width );
-		};
-		artboardPageOffset += fwJSON.pages[i].width + 100;
-		artboardStateOffset = 0;
-	}
+			setGrid( artboard, _grid );
+			addGuideline( artboard, _page.guides, _grid.gridOrigin );
 
-	log( '------------------------------------------ Close Proccessing' );
-
-}
+			return artboard;
+		},
+		offset: function( _width ) {
+			artboardPageOffset += _width + 100;
+			artboardStateOffset = 0;
+		}
+	};
+})();
 
 json2Layer.symbolMaster = ( function () {
 	var artboardZeroPoint = { x: 0, y: 0 };
 
 	return {
+		init: function( doc, fwJSON ) {
+			if ( 7 <= json2Layer.appVer.minor ) {
+				log( '-> Create Symbol Master' );
+				var masterPage = doc.addBlankPage();
+				doc.pages().objectAtIndex( doc.pages().count() - 1 ).setName( 'Symbols' );
+				json2Layer.symbols = {};
+				for ( var symbolID in fwJSON.symbols ) {
+					json2Layer.symbolMaster.create( masterPage, fwJSON.symbols[symbolID], symbolID );
+				}
+				doc.setCurrentPage( doc.pages().objectAtIndex(0) );
+				log( '-> // Create Symbol Master' );
+			} else {
+				json2Layer.symbols = [];
+			}
+
+		},
 		create: function( parent, symbol, symbolID ) {
 			if ( !json2Layer.symbols[symbolID] ) {
 				log( '-> Create Symbol Master: ' + symbol.symbolName );
@@ -213,7 +235,7 @@ function createElements( parent, elems, isMask ) {
 					}
 					break;
 				}
-			}
+		}
 
 		if ( null != elems[i].effectList ) {
 			addEffects( shape, elems[i].effectList.effects );
@@ -232,8 +254,7 @@ function createElements( parent, elems, isMask ) {
 	};
 
 	if ( !isMask ) {
-		log( '!!! Finished createElements !!!');
-		log( '!!! resizeRoot() to ' + parent.name() );
+		log( '!!! Finished createElements!!! resizeRoot() at ' + parent.name());
 		if ( 5 > json2Layer.appVer.minor ) {
 			parent.resizeRoot( false );
 		} else {
@@ -254,16 +275,8 @@ function addContextSettings( shape, attrs ) {
 
 function setFrame( targetLayer, attrs, parent ) {
 	log( '     -> setFrame()' );
-	// log( parent );
-	// log( parent.absoluteRect() );
-	// log( parent.frame() );
-	// var offsetX2 = parent ? parent.absoluteRect().x() : 0;
-	// var offsetY2 = parent ? parent.absoluteRect().y() : 0;
 	var offsetX = parent ? parent.frame().x() : 0;
 	var offsetY = parent ? parent.frame().y() : 0;
-	log( attrs );
-	// log( '        offset: X:' + offsetX + ' / ' + offsetX2 + ', Y: ' + offsetY + ' / ' + offsetY2 );
-	log( '        attrs: x:' + attrs.left + ', Y: ' + attrs.top );
 	if ( targetLayer.parentObject()
 		&& targetLayer.parentObject().length()
 		&& targetLayer.parentObject().firstObject().hasClippingMask() ) {
@@ -677,7 +690,7 @@ function importBitmap( parent, attrs, isMask ) {
 
 	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
 	bitmap = setFrame( bitmap, attrs, ( isMask ? parent : false ) );
-	bitmap.name = attrs.name;
+	bitmap.name = unescape( attrs.name );
 
 	parent.addLayers( [bitmap] );
 
@@ -687,11 +700,7 @@ function importBitmap( parent, attrs, isMask ) {
 function createMask( parent, attrs ) {
 	log( '    -> createMask' );
 
-	// var maskGroup = parent.addLayerOfType( 'group' );
 	var maskGroup = createGroup( parent, attrs );
-	// parent.addLayers( [maskGroup] )
-	// maskGroup.setName( attrs.name );
-
 	var mask = createElements( maskGroup, attrs.mask.element, attrs.mask.mode );
 	log( '     Mask Object: ' + mask.frame() );
 
@@ -720,13 +729,9 @@ function createGroup( parent, attrs, _isLayer ) {
 }
 
 function createText( parent, attrs, isMask ) {
-	// var text = parent.addLayerOfType( 'text' );
 	var text = MSTextLayer.new();
 	parent.addLayers( [text] );
-	// text = setFrame( text, attrs, ( isMask ? parent : false ) );
-	if ( !attrs.autoExpand ) {
-		text.textBehaviour = 1;
-	}
+	if ( !attrs.autoExpand ) text.textBehaviour = 1;
 
 	var textPart = [0];
 	var textPartNum = attrs.textRuns.length;
@@ -793,16 +798,16 @@ function createText( parent, attrs, isMask ) {
 
 function createRectangle( parent, attrs, isMask ) {
 	var originMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1];
-	var isTransform = false;
+	var isTransformed = false;
 	
 	for (var i = 0; i < originMatrix.length; i++) {
 		if ( originMatrix[i] != attrs.transform.matrix[i] && ( 0 != i && 4 != i && 6 != i && 7 != i) ) {
-			isTransform = true;
+			isTransformed = true;
 			break;
 		}
 	}
 	var m = attrs.transform.matrix;
-	var ow = attrs.originalSides['right'] - attrs.originalSides['left'],
+	var ow = attrs.originalSides['right']  - attrs.originalSides['left'],
 	    oh = attrs.originalSides['bottom'] - attrs.originalSides['top'];
 	var ol = attrs.originalSides['left'],
 	    ot = attrs.originalSides['top'],
@@ -815,7 +820,7 @@ function createRectangle( parent, attrs, isMask ) {
 		attrs.left,               attrs.top + attrs.height
 	];
 
-	if ( isTransform ) {
+	if ( isTransformed ) {
 		var rectangle = NSBezierPath.bezierPath();
 
 		// a d g b e h c f i
@@ -886,22 +891,17 @@ function createSlice( parent, attrs, isMask ) {
 function addBezier( parent, attrs, isMask ) {
 	var bezierLine = NSBezierPath.bezierPath();
 	log( '     -> addBezier Parent Frame' );
-	// log( parent.frame() );
-
-	// var offsetX = parent ? parent.absoluteRect().x() : 0;
-	// var offsetY = parent ? parent.absoluteRect().y() : 0;
 	var offsetX = 0;
 	var offsetY = 0;
-	log ( '        -> Offset: ' + offsetX + ' / ' + offsetY );
 
 	for ( var i = 0; i < attrs.length; i ++ ) {
 		var nodes = attrs[i].nodes;
-		bezierLine.moveToPoint( NSMakePoint( nodes[0].x - offsetX, nodes[0].y - offsetY ) );
+		bezierLine.moveToPoint( NSMakePoint( nodes[0].x, nodes[0].y ) );
 
 		for ( var j = 1; j < nodes.length; j++ ) {
-			var ancher        = NSMakePoint( nodes[j].x - offsetX, nodes[j].y - offsetY );
-			var currentHandle = NSMakePoint( nodes[j].predX - offsetX,   nodes[j].predY - offsetY );
-			var prevHandle    = NSMakePoint( nodes[j - 1].succX - offsetX, nodes[j - 1].succY - offsetY );
+			var ancher        = NSMakePoint( nodes[j].x,         nodes[j].y );
+			var currentHandle = NSMakePoint( nodes[j].predX,     nodes[j].predY );
+			var prevHandle    = NSMakePoint( nodes[j - 1].succX, nodes[j - 1].succY );
 			// log( 'ancher:        ' + ancher );
 			// log( 'currentHandle: ' + currentHandle );
 			// log( 'prevHandle:    ' + prevHandle );
@@ -909,14 +909,11 @@ function addBezier( parent, attrs, isMask ) {
 		};
 		if ( attrs[i].isClosed ) {
 			[bezierLine 
-				curveToPoint:NSMakePoint( nodes[0].x - offsetX, nodes[0].y - offsetY ) 
-				controlPoint1:NSMakePoint( nodes[nodes.length - 1].succX - offsetX, nodes[nodes.length - 1].succY - offsetY )
-				controlPoint2:NSMakePoint( nodes[0].predX - offsetX, nodes[0].predY - offsetY )
+				curveToPoint: NSMakePoint( nodes[0].x,                    nodes[0].y ) 
+				controlPoint1:NSMakePoint( nodes[nodes.length - 1].succX, nodes[nodes.length - 1].succY )
+				controlPoint2:NSMakePoint( nodes[0].predX,                nodes[0].predY )
 			];
 			bezierLine.closePath();
-			// log( 'closed-ancher:        ' + NSMakePoint( nodes[0].x, nodes[0].y ) );
-			// log( 'closed-currentHandle: ' + NSMakePoint( nodes[nodes.length - 1].succX, nodes[nodes.length - 1].succY ) );
-			// log( 'closed-prevHandle:    ' + NSMakePoint( nodes[0].predX, nodes[0].predY ) );
 		}
 	}
 	var shape = MSShapeGroup.shapeWithBezierPath( bezierLine );
@@ -1079,10 +1076,10 @@ function addGradientFill( shape, pathAttrs ) {
 				} else {
 					var nodeColor;
 					var assets = {prev:{}, next:{}, current:{}};
-						assets.prev.position = attrs.nodes[ci - 1].position;
-						assets.prev.color  = attrs.nodes[ci - 1].color;
-						assets.next.position = attrs.nodes[ci].position;
-						assets.next.color  = attrs.nodes[ci].color;
+						assets.prev.position    = attrs.nodes[ci - 1].position;
+						assets.prev.color       = attrs.nodes[ci - 1].color;
+						assets.next.position    = attrs.nodes[ci].position;
+						assets.next.color       = attrs.nodes[ci].color;
 						assets.current.position = optimazedPoints[index].position;
 
 					optimazedPoints[index].color = getGradientStopColorOnOpacitySide( assets );
@@ -1225,7 +1222,7 @@ function convertFilltoAlpha( shape, fillType ) {
 }
 
 function applyRotation( shape, radian ) {
-	angle = roundWithDigit( 0 - radian * ( 180 / Math.PI ), 2 );
+	var angle = roundWithDigit( 0 - radian * ( 180 / Math.PI ), 2 );
 	if ( 0 != angle ) {
 		angle = 360 - angle;
 		shape.rotation = angle;
