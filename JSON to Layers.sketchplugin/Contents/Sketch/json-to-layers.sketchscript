@@ -103,7 +103,7 @@ json2Layer.symbolMaster = ( function () {
 		},
 		create: function( parent, symbol, symbolID ) {
 			if ( !json2Layer.symbols[symbolID] ) {
-				log( '-> Create Symbol Master: ' + symbol.symbolName );
+				log( '-> Create Symbol Master: ' + unescape( symbol.symbolName ) );
 				var artboard = MSArtboardGroup.new();
 				artboard.setName( unescape( symbol.symbolName ) );
 				artboard.frame().setX( artboardZeroPoint.x );
@@ -116,8 +116,8 @@ json2Layer.symbolMaster = ( function () {
 				createElements( artboard, symbol.elements );
 
 				for (var i = artboard.layers().count() - 1; i >= 0; i--) {
-					artboard.layers().objectAtIndex( i ).frame().addX( -symbol.left );
-					artboard.layers().objectAtIndex( i ).frame().addY( -symbol.top );
+					artboard.layers().objectAtIndex( i ).frame().x -= symbol.left;
+					artboard.layers().objectAtIndex( i ).frame().y -= symbol.top;
 				}
 				json2Layer.symbols[symbolID] = artboard.convertToSymbol();
 				log( '   // Created symbol master: ' + symbol.symbolName );
@@ -278,7 +278,7 @@ function setFrame( targetLayer, attrs, parent ) {
 	var offsetX = parent ? parent.frame().x() : 0;
 	var offsetY = parent ? parent.frame().y() : 0;
 	if ( targetLayer.parentObject()
-		&& targetLayer.parentObject().length()
+		&& targetLayer.parentObject().count()
 		&& targetLayer.parentObject().firstObject().hasClippingMask() ) {
 		offsetX = targetLayer.parentObject().parentObject().frame().x();
 		offsetY = targetLayer.parentObject().parentObject().frame().y();
@@ -857,7 +857,7 @@ function createRectangle( parent, attrs, isMask ) {
 		rectangle.closePath();
 
 		var shape = MSShapeGroup.shapeWithBezierPath( rectangle );
-		for (var i = 0; i < shape.layers().firstObject().path().points().length(); i++) {
+		for (var i = 0; i < shape.layers().firstObject().path().points().count(); i++) {
 			shape.layers().firstObject().path().points().objectAtIndex( i ).setCornerRadius( attrs.radius * m[8] );
 		}
 		parent.addLayers( [shape] );
@@ -1184,15 +1184,15 @@ function addGradientFill( shape, pathAttrs ) {
 		gradient.setPoint_atIndex_( CGPointMake( startX, startY ), 0 );
 		gradient.setPoint_atIndex_( CGPointMake( endX, endY ), orignPoint - 1 );
 	} else {
-		for ( var i = 0; i < gradient.stops().length(); i++ ) {
+		for ( var i = 0; i < gradient.stops().count(); i++ ) {
 			gradient.stops().objectAtIndex( i ).position = gradient.stops().objectAtIndex( i ).position() / 2;
 		}
-		var originalStops = gradient.stops().length();
+		var originalStops = gradient.stops().count();
 		for ( var i = 0; i < originalStops; i++ ) {
 			if ( 0 != gradient.stops().objectAtIndex( i ).position() 
 				 && 0.5 != gradient.stops().objectAtIndex( i ).position() ) {
 				gradient.addStopAtLength( 1 - gradient.stops().objectAtIndex( i ).position() );
-				gradient.setColor_atIndex_( gradient.stops().objectAtIndex( i ).color(), gradient.stops().length() - 1 );
+				gradient.setColor_atIndex_( gradient.stops().objectAtIndex( i ).color(), gradient.stops().count() - 1 );
 			}
 		}
 	}
@@ -1202,7 +1202,7 @@ function convertFilltoAlpha( shape, fillType ) {
 	switch ( fillType ) {
 		case 'gradient':
 			var gradient = shape.style().fills().firstObject().gradient();
-			for ( var i = 0; i < gradient.stops().length(); i++ ) {
+			for ( var i = 0; i < gradient.stops().count(); i++ ) {
 				var color = MSColor.colorWithSVGString( '#' + gradient.stops().objectAtIndex(i).color().hexValue().toString() );
 				color.alpha = gradient.stops().objectAtIndex(i).color().alpha() * gray2Alpha( gradient.stops().objectAtIndex(i).color().hexValue().toString() );
 				gradient.setColor_atIndex_( color, i );
@@ -1214,7 +1214,7 @@ function convertFilltoAlpha( shape, fillType ) {
 			color.alpha = gray2Alpha( fill.color().hexValue().toString() );
 			fill.setFillType( 1 );
 			var gradient = fill.gradient();
-			for ( var i = 0; i < fill.gradient().stops().length(); i++ ) {
+			for ( var i = 0; i < fill.gradient().stops().count(); i++ ) {
 				gradient.setColor_atIndex_( color, i );
 			}
 			break;
