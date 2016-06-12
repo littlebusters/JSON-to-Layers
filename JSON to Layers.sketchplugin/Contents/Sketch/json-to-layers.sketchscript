@@ -6,7 +6,7 @@ json2Layer.init = function ( doc ) {
 }
 
 var onRun = function ( context ) {
-	log( 'Start Proccessing ------------------------------------------' );
+	// log( 'Start Proccessing ------------------------------------------' );
 	json2Layer.init( context.document );
 	var doc = json2Layer.doc;
 	var currentPage = doc.currentPage();
@@ -17,9 +17,9 @@ var onRun = function ( context ) {
 	json2Layer.symbolMaster.init( doc, fwJSON );
 
 	for ( var i = 0; i < fwJSON.pages.length; i++ ) {
-		log( 'Page: ' + fwJSON.pages[i].pageName + ' //////////////////////////////////////////' );
+		// log( 'Page: ' + fwJSON.pages[i].pageName + ' //////////////////////////////////////////' );
 		for ( var stateIndex = 0; stateIndex < fwJSON.pages[i].frames.length; stateIndex++ ) {
-			log( 'Frame (state): ' + stateIndex + ' ------------------------------------------>' );
+			// log( 'Frame (state): ' + stateIndex + ' ------------------------------------------>' );
 			var artboard = json2Layer.artboards.create( fwJSON.pages[i], currentPage, fwJSON.documentSetting.grid );
 			fwJSON.pages[i].frames[stateIndex].topLayers.reverse();
 			createElements( artboard, fwJSON.pages[i].frames[stateIndex].topLayers );
@@ -27,7 +27,7 @@ var onRun = function ( context ) {
 		json2Layer.artboards.offset( fwJSON.pages[i].width );
 	}
 
-	log( '------------------------------------------ Close Proccessing' );
+	// log( '------------------------------------------ Close Proccessing' );
 
 }
 
@@ -43,7 +43,7 @@ function loadJSON() {
 	if ( openPanelButtonPressed == NSFileHandlingPanelOKButton ) {
 		var filePath = openPanel.URL().path();
 		var fwJSON = JSON.parse( NSString.stringWithContentsOfFile( filePath ) ); 
-		log( 'Open File from: ' + filePath );
+		// log( 'Open File from: ' + filePath );
 		json2Layer.orgSymbols = fwJSON.symbols;
 		json2Layer.resPath.basePath    = openPanel.directoryURL().path();
 		json2Layer.resPath.exportedDir = fwJSON.resExportedDir;
@@ -87,7 +87,7 @@ json2Layer.symbolMaster = ( function () {
 	return {
 		init: function( doc, fwJSON ) {
 			if ( 7 <= json2Layer.appVer.minor ) {
-				log( '-> Create Symbol Master' );
+				// log( '-> Create Symbol Master' );
 				var masterPage = doc.addBlankPage();
 				doc.pages().objectAtIndex( doc.pages().count() - 1 ).setName( 'Symbols' );
 				json2Layer.symbols = {};
@@ -95,7 +95,7 @@ json2Layer.symbolMaster = ( function () {
 					json2Layer.symbolMaster.create( masterPage, fwJSON.symbols[symbolID], symbolID );
 				}
 				doc.setCurrentPage( doc.pages().objectAtIndex(0) );
-				log( '-> // Create Symbol Master' );
+				// log( '-> // Create Symbol Master' );
 			} else {
 				json2Layer.symbols = [];
 			}
@@ -103,7 +103,7 @@ json2Layer.symbolMaster = ( function () {
 		},
 		create: function( parent, symbol, symbolID ) {
 			if ( !json2Layer.symbols[symbolID] ) {
-				log( '-> Create Symbol Master: ' + unescape( symbol.symbolName ) );
+				// log( '-> Create Symbol Master: ' + unescape( symbol.symbolName ) );
 				var artboard = MSArtboardGroup.new();
 				artboard.setName( unescape( symbol.symbolName ) );
 				artboard.frame().setX( artboardZeroPoint.x );
@@ -120,7 +120,7 @@ json2Layer.symbolMaster = ( function () {
 					artboard.layers().objectAtIndex( i ).frame().y -= symbol.top;
 				}
 				json2Layer.symbols[symbolID] = artboard.convertToSymbol();
-				log( '   // Created symbol master: ' + symbol.symbolName );
+				// log( '   // Created symbol master: ' + symbol.symbolName );
 			}
 		}
 	};
@@ -128,11 +128,11 @@ json2Layer.symbolMaster = ( function () {
 })();
 
 function createElements( parent, elems, isMask ) {
-	log( '-> Child Layer Proccessing' );
+	// log( '-> Child Layer Proccessing' );
 	if ( !isMask ) isMask = false;
 
 	for ( var i = elems.length - 1; i >= 0; i-- ) {
-		log( '  -> Proccessing: ' + unescape( elems[i].name ) + ' / ' + elems[i].type );
+		// log( '  -> Proccessing: ' + unescape( elems[i].name ) + ' / ' + elems[i].type );
 		var elemsType = elems[i].type;
 		var hasMask = ( null != elems[i].mask ) ? true : false;
 		var actualParent = ( hasMask ) ? createMask( parent, elems[i] ) : parent;
@@ -140,7 +140,7 @@ function createElements( parent, elems, isMask ) {
 		switch ( elemsType ) {
 			case 'layer':
 				if ( elems[i].hasChildren ) {
-					log( '     Type: Layer' );
+					// log( '     Type: Layer' );
 					shape = createGroup( parent, elems[i], true );
 					createElements( shape, elems[i].elems );
 					if ( 5 > json2Layer.appVer.minor ) {
@@ -152,19 +152,19 @@ function createElements( parent, elems, isMask ) {
 				break;
 
 			case 'text':
-				log( '     Type: Text: ' + unescape( elems[i].textChars ));
+				// log( '     Type: Text: ' + unescape( elems[i].textChars ));
 				var shape = createText( actualParent, elems[i], isMask );
 				shape.setName( unescape( elems[i].textChars ));
 				break;
 
 			case 'bitmap':
-				log( '     Type: Bitmap' );
+				// log( '     Type: Bitmap' );
 				var shape = importBitmap( actualParent, elems[i], isMask );
 				addContextSettings( shape, elems[i] );
 				break;
 
 			case 'rectangle':
-				log( '     Type: Rectangle' );
+				// log( '     Type: Rectangle' );
 				var shape = createRectangle( actualParent, elems[i], isMask );
 
 				shape.setName( unescape( elems[i].name ));
@@ -173,7 +173,7 @@ function createElements( parent, elems, isMask ) {
 				break;
 
 			case 'path':
-				log( '     Type: Bezier Path' );
+				// log( '     Type: Bezier Path' );
 				var shape = addBezier( actualParent, elems[i].bezierPath, isMask );
 				shape.setName( unescape( elems[i].name ));
 				addContextSettings( shape, elems[i] );
@@ -182,12 +182,12 @@ function createElements( parent, elems, isMask ) {
 				break;
 
 			case 'slice':
-				log( '     Type: Slice' );
+				// log( '     Type: Slice' );
 				var shape = createSlice( actualParent, elems[i], isMask );
 				break;
 
 			case 'group':
-				log( '     Type: Layer Group' );
+				// log( '     Type: Layer Group' );
 				var shape = createGroup( actualParent, elems[i], isMask );
 				addContextSettings( shape, elems[i] );
 				createElements( shape, elems[i].elements );
@@ -200,7 +200,7 @@ function createElements( parent, elems, isMask ) {
 				break;
 
 			case 'symbol':
-				log( '     Type: Layer Group - Symbol' );
+				// log( '     Type: Layer Group - Symbol' );
 				if ( 7 <= json2Layer.appVer.minor ) {
 					if ( json2Layer.symbols[elems[i].elements] ) {
 						var shape = json2Layer.symbols[elems[i].elements].newSymbolInstance();
@@ -254,7 +254,7 @@ function createElements( parent, elems, isMask ) {
 	};
 
 	if ( !isMask ) {
-		log( '!!! Finished createElements!!! resizeRoot() at ' + parent.name());
+		// log( '!!! Finished createElements!!! resizeRoot() at ' + parent.name());
 		if ( 5 > json2Layer.appVer.minor ) {
 			parent.resizeRoot( false );
 		} else {
@@ -274,7 +274,7 @@ function addContextSettings( shape, attrs ) {
 }
 
 function setFrame( targetLayer, attrs, parent ) {
-	log( '     -> setFrame()' );
+	// log( '     -> setFrame()' );
 	var offsetX = parent ? parent.frame().x() : 0;
 	var offsetY = parent ? parent.frame().y() : 0;
 	if ( targetLayer.parentObject()
@@ -290,8 +290,8 @@ function setFrame( targetLayer, attrs, parent ) {
 	}
 	targetLayer.frame().width = attrs.width;
 	targetLayer.frame().height = attrs.height;
-	log( targetLayer.treeAsDictionary() );
-	log( '     finish setFrame() <-' );
+	// log( targetLayer.treeAsDictionary() );
+	// log( '     finish setFrame() <-' );
 
 	return targetLayer;
 }
@@ -403,7 +403,7 @@ function addBorder( shape, attrs ) {
 
 function addEffects( shape, attrs ) {
 	for ( var i = attrs.length - 1; i >= 0; i-- ) {
-		log( '  Applied Effect: ' + attrs[i].name );
+		// log( '  Applied Effect: ' + attrs[i].name );
 
 		if ( attrs[i].EffectIsVisible ) {
 			switch ( attrs[i].name ) {
@@ -698,11 +698,11 @@ function importBitmap( parent, attrs, isMask ) {
 }
 
 function createMask( parent, attrs ) {
-	log( '    -> createMask' );
+	// log( '    -> createMask' );
 
 	var maskGroup = createGroup( parent, attrs );
 	var mask = createElements( maskGroup, attrs.mask.element, attrs.mask.mode );
-	log( '     Mask Object: ' + mask.frame() );
+	// log( '     Mask Object: ' + mask.frame() );
 
 	mask.setHasClippingMask( true );
 
@@ -716,7 +716,7 @@ function createMask( parent, attrs ) {
 }
 
 function createGroup( parent, attrs, _isLayer ) {
-	log( '    -> createGroup' );
+	// log( '    -> createGroup' );
 
 	var isLayer = _isLayer || false;	
 	// var group = parent.addLayerOfType( 'group' );
@@ -737,7 +737,7 @@ function createText( parent, attrs, isMask ) {
 	var textPartNum = attrs.textRuns.length;
 	text.stringValue = '';
 	for ( var i = 0; i < textPartNum; i++ ) {
-		log( unescape( attrs.textRuns[i].characters ) + attrs.textRuns[i].characters );
+		// log( unescape( attrs.textRuns[i].characters ) + attrs.textRuns[i].characters );
 		text.stringValue = text.stringValue() + unescape( attrs.textRuns[i].characters );
 		textPart.push( textPart[i] + attrs.textRuns[i].characters.length );
 	}
@@ -890,7 +890,7 @@ function createSlice( parent, attrs, isMask ) {
 
 function addBezier( parent, attrs, isMask ) {
 	var bezierLine = NSBezierPath.bezierPath();
-	log( '     -> addBezier Parent Frame' );
+	// log( '     -> addBezier Parent Frame' );
 	var offsetX = 0;
 	var offsetY = 0;
 
@@ -922,7 +922,7 @@ function addBezier( parent, attrs, isMask ) {
 }
 
 function createSymbol( parent, attrs ) {
-	log( '           Create Symbol' );
+	// log( '           Create Symbol' );
 
 	var shape = createGroup( parent, attrs );
 	shape.setName( unescape( attrs.symbolName ));
@@ -954,7 +954,7 @@ function createSymbol( parent, attrs ) {
 }
 
 function addSymbol( parent, attrs, symbolIndex ) {
-	log( '           Exist Symbol' );
+	// log( '           Exist Symbol' );
 	var symbol = json2Layer.doc.documentData().layerSymbols().symbolAtIndex( symbolIndex );
 	var shape = symbol.newInstance();
 	shape.setName( unescape( attrs.name ));
@@ -992,7 +992,7 @@ function addGuideline ( parent, guides, grid ) {
 }
 
 function addTextureFill( shape, attrs ) {
-	log( '     -> addTextureFill' );
+	// log( '     -> addTextureFill' );
 	var splitPath = attrs.fillTexture.filePath.split( escape( json2Layer.resPath.basePath ));
 	var filePath = json2Layer.resPath.basePath + splitPath[1];
 	var texturePath = NSImage.new().initWithContentsOfFile( filePath );
@@ -1014,7 +1014,7 @@ function addTextureFill( shape, attrs ) {
 }
 
 function addPatternFill( shape, attrs ) {
-	log( '     -> addPatternFill' );
+	// log( '     -> addPatternFill' );
 	var splitPath = attrs.split( escape( json2Layer.resPath.basePath ));
 	var filePath = json2Layer.resPath.basePath + splitPath[1];
 	var patternPath = NSImage.new().initWithContentsOfFile( filePath );
@@ -1034,7 +1034,7 @@ function addPatternFill( shape, attrs ) {
 }
 
 function addGradientFill( shape, pathAttrs ) {
-	log( '>>> addGradientFill: ' + pathAttrs.fill.gradient.gradientType );
+	// log( '>>> addGradientFill: ' + pathAttrs.fill.gradient.gradientType );
 
 	var attrs = pathAttrs.fill.gradient;
 	var gradientNodes = attrs.nodes.concat( attrs.opacityNodes );
