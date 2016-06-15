@@ -116,8 +116,8 @@ json2Layer.symbolMaster = ( function () {
 				createElements( artboard, symbol.elements );
 
 				for (var i = artboard.layers().count() - 1; i >= 0; i--) {
-					artboard.layers().objectAtIndex( i ).frame().x -= symbol.left;
-					artboard.layers().objectAtIndex( i ).frame().y -= symbol.top;
+					artboard.layers().objectAtIndex( i ).frame().x = artboard.layers().objectAtIndex( i ).frame().x() - symbol.left;
+					artboard.layers().objectAtIndex( i ).frame().y = artboard.layers().objectAtIndex( i ).frame().y() - symbol.top;
 				}
 				json2Layer.symbols[symbolID] = artboard.convertToSymbol();
 				// log( '   // Created symbol master: ' + symbol.symbolName );
