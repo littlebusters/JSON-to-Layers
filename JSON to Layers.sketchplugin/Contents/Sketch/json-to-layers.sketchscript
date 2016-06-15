@@ -132,7 +132,7 @@ function createElements( parent, elems, isMask ) {
 	if ( !isMask ) isMask = false;
 
 	for ( var i = elems.length - 1; i >= 0; i-- ) {
-		// log( '  -> Proccessing: ' + unescape( elems[i].name ) + ' / ' + elems[i].type );
+		log( '  -> Proccessing: ' + unescape( elems[i].name ) + ' / ' + elems[i].type );
 		var elemsType = elems[i].type;
 		var hasMask = ( null != elems[i].mask ) ? true : false;
 		var actualParent = ( hasMask ) ? createMask( parent, elems[i] ) : parent;
