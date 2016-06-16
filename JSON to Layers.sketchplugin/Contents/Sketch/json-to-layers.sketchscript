@@ -883,7 +883,7 @@ function createSlice( parent, attrs, isMask ) {
 	slice = setFrame( slice, attrs, ( isMask ? parent : false ) );
 	slice.setName( unescape( attrs.baseName ));
 
-	parent.addSlice( slice );
+	parent.addLayers( [slice] );
 
 	return slice;
 }
