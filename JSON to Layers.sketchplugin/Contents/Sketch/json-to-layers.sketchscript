@@ -154,7 +154,8 @@ function createElements( parent, elems, isMask ) {
 			case 'text':
 				// log( '     Type: Text: ' + unescape( elems[i].textChars ));
 				var shape = createText( actualParent, elems[i], isMask );
-				shape.setName( unescape( elems[i].textChars ));
+
+				setLayerName( shape, elems[i].textChars, elems[i].type );
 				break;
 
 			case 'bitmap':
@@ -167,7 +168,7 @@ function createElements( parent, elems, isMask ) {
 				// log( '     Type: Rectangle' );
 				var shape = createRectangle( actualParent, elems[i], isMask );
 
-				shape.setName( unescape( elems[i].name ));
+				setLayerName( shape, elems[i].name, elems[i].type );
 				addContextSettings( shape, elems[i] );
 				addPathAttributes( shape, elems[i].pathAttributes, isMask );
 				break;
@@ -175,7 +176,8 @@ function createElements( parent, elems, isMask ) {
 			case 'path':
 				// log( '     Type: Bezier Path' );
 				var shape = addBezier( actualParent, elems[i].bezierPath, isMask );
-				shape.setName( unescape( elems[i].name ));
+
+				setLayerName( shape, elems[i].name, elems[i].type );
 				addContextSettings( shape, elems[i] );
 				actualParent.addLayers( [shape] );
 				addPathAttributes( shape, elems[i].pathAttributes, isMask );
@@ -213,7 +215,7 @@ function createElements( parent, elems, isMask ) {
 						var shape = json2Layer.symbols[elems[i].elements].newSymbolInstance();
 						parent.addLayers( [shape] );
 					}
-					shape.setName( elems[i].name );
+					setLayerName( shape, elems[i].name, elems[i].type );
 					shape.frame().setX( elems[i].left );
 					shape.frame().setY( elems[i].top );
 				} else {
@@ -294,6 +296,15 @@ function setFrame( targetLayer, attrs, parent ) {
 	// log( '     finish setFrame() <-' );
 
 	return targetLayer;
+}
+
+function setLayerName( targetLayer, name, type ) {
+	name = unescape( name );
+	if ( 'null' == name || '' == name ) {
+		targetLayer.setName( type.replace(/^./g, type.charAt(0).toUpperCase() ) );
+	} else {
+		targetLayer.setName( name );
+	}
 }
 
 function addStylePart( shape, type ) {
@@ -721,7 +732,7 @@ function createGroup( parent, attrs, _isLayer ) {
 	var isLayer = _isLayer || false;	
 	// var group = parent.addLayerOfType( 'group' );
 	var group = MSLayerGroup.new();
-	group.setName( unescape( attrs.name ) || unescape( attrs.name ) );
+	setLayerName( group, attrs.name, 'group' );
 	group.hasClickThrough = ( isLayer ) ? 1 : 0;
 	parent.addLayers( [group] );
 
@@ -881,7 +892,7 @@ function createRectangle( parent, attrs, isMask ) {
 function createSlice( parent, attrs, isMask ) {
 	var slice = MSSliceLayer.new();
 	slice = setFrame( slice, attrs, ( isMask ? parent : false ) );
-	slice.setName( unescape( attrs.baseName ));
+	setLayerName( slice, attrs.baseName, 'slice' );
 
 	parent.addLayers( [slice] );
 
@@ -925,7 +936,7 @@ function createSymbol( parent, attrs ) {
 	// log( '           Create Symbol' );
 
 	var shape = createGroup( parent, attrs );
-	shape.setName( unescape( attrs.symbolName ));
+	setLayerName( shape, attrs.symbolName, 'symbol' );
 	addContextSettings( shape, attrs );
 	createElements( shape, json2Layer.orgSymbols[attrs.elements].elements );
 	if ( 5 > json2Layer.appVer.minor ) {
