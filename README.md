@@ -12,7 +12,7 @@
 </g>
 </svg>
 
-You can import from Fireworks PNG (as JSON) to the Sketch 3.
+You can import from Fireworks PNG (as JSON) to the Sketch 3. ([README in Japanese](https://github.com/littlebusters/JSON-to-Layres/blob/master/README.ja.md))
 
 TL;DR: [Fireworks to Sketch 3 — QuickCast.](http://quick.as/pk7yuzz8b)
 
@@ -142,7 +142,7 @@ Export as Fireworks PNG and apply patterned Fill in Sketch 3.
 
 ## Bug reports
 
-1. Open Console.app from `/Applications/Utilities/Console`.
+1. Open Console.app from `/Applications/Utilities/`.
 1. Type "Sketch Plugin" in filter box.
 1. Run broken plugin.
 1. Submit output of the Console.app via Github issues with the version of your Sketch.app.
