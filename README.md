@@ -1,6 +1,6 @@
 # JSON to Layers
 
-[!JSON to Layers HERO](http://creative-tweet.net/img/github/json-to-layers-hero.png)
+![JSON to Layers HERO](http://creative-tweet.net/img/github/json-to-layers-hero.png)
 
 You can import from Fireworks PNG (as JSON) to the Sketch 3. ([README in Japanese](https://github.com/littlebusters/JSON-to-Layers/blob/master/README.ja.md))
 

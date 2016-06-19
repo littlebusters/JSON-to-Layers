@@ -1,6 +1,6 @@
 # JSON to Layers
 
-[!JSON to Layers HERO](http://creative-tweet.net/img/github/json-to-layers-hero.png)
+![JSON to Layers HERO](http://creative-tweet.net/img/github/json-to-layers-hero.png)
 
 Fireworks PNGの構造をJSONファイルとして書き出し、Sketch 3へインポートする機能拡張およびプラグインです。
 
