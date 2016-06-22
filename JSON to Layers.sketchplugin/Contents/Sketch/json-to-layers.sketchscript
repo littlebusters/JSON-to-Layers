@@ -1015,8 +1015,11 @@ function addTextureFill( shape, attrs ) {
 	if ( 5 > json2Layer.appVer.minor ) {
 		var fillCollection = textureFill.documentData().images();
 		textureFill.setPatternImage_collection_( texturePath, fillCollection );
-	} else {
+	} else if ( 8 > json2Layer.appVer.minor ) {
 		textureFill.setPatternImage( texturePath );
+	} else {
+		var image = MSImageData.alloc().initWithImage_convertColorSpace_( patternPath, false );
+		shape.style().fills().firstObject().setImage( image );
 	}
 
 	var contextSettings = textureFill.contextSettings();
@@ -1038,9 +1041,11 @@ function addPatternFill( shape, attrs ) {
 	if ( 5 > json2Layer.appVer.minor ) {
 		var fillCollection = shapeFill.documentData().images();
 		shapeFill.setPatternImage_collection_( patternPath, fillCollection );
-	} else {
+	} else if ( 8 > json2Layer.appVer.minor ) {
 		shape.style().fills().firstObject().setPatternImage( patternPath );
-		shape.style().fills().firstObject().setPatternFillType( 1 );
+	} else {
+		var image = MSImageData.alloc().initWithImage_convertColorSpace_( patternPath, false );
+		shape.style().fills().firstObject().setImage( image );
 	}
 }
 
