@@ -1018,7 +1018,7 @@ function addTextureFill( shape, attrs ) {
 	} else if ( 8 > json2Layer.appVer.minor ) {
 		textureFill.setPatternImage( texturePath );
 	} else {
-		var image = MSImageData.alloc().initWithImage_convertColorSpace_( patternPath, false );
+		var image = MSImageData.alloc().initWithImage_convertColorSpace_( texturePath, false );
 		shape.style().fills().firstObject().setImage( image );
 	}
 
