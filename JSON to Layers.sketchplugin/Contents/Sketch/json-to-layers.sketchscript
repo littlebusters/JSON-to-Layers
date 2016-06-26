@@ -695,9 +695,9 @@ function addEffects( shape, attrs ) {
 }
 
 function importBitmap( parent, attrs, isMask ) {
-	var filePath = attrs.uri;
-	var splitPath = filePath.split( escape( json2Layer.resPath.basePath ) );
-	filePath = json2Layer.resPath.basePath + splitPath[1];
+	var filePath = escape( attrs.uri );
+	var splitPath = filePath.split( escape( json2Layer.resPath.exportedDir ) );
+	filePath = json2Layer.resPath.basePath + '/' + json2Layer.resPath.exportedDir + splitPath[1];
 
 	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
 	bitmap = setFrame( bitmap, attrs, ( isMask ? parent : false ) );
