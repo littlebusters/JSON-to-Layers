@@ -1004,34 +1004,34 @@ function addGuideline ( parent, guides, grid ) {
 
 function addTextureFill( shape, attrs ) {
 	// log( '     -> addTextureFill' );
-	var splitPath = attrs.fillTexture.filePath.split( escape( json2Layer.resPath.basePath ));
-	var filePath = json2Layer.resPath.basePath + splitPath[1];
-	var texturePath = NSImage.new().initWithContentsOfFile( filePath );
-	var textureFill = addStylePart( shape, 0 );
+	var splitPath = attrs.fillTexture.filePath.split( json2Layer.resPath.exportedDir);
+	var filePath = json2Layer.resPath.basePath + '/' + json2Layer.resPath.exportedDir + splitPath[1];
+	var image = NSImage.new().initWithContentsOfFile( filePath );
+	var shapeFill = addStylePart( shape, 0 );
 	
-	textureFill.setFillType( 4 );
-	textureFill.setPatternFillType( 0 );
+	shapeFill.setFillType( 4 );
+	shapeFill.setPatternFillType( 0 );
 
 	if ( 5 > json2Layer.appVer.minor ) {
-		var fillCollection = textureFill.documentData().images();
-		textureFill.setPatternImage_collection_( texturePath, fillCollection );
+		var fillCollection = shapeFill.documentData().images();
+		shapeFill.setPatternImage_collection_( image, fillCollection );
 	} else if ( 8 > json2Layer.appVer.minor ) {
-		textureFill.setPatternImage( texturePath );
+		shapeFill.setPatternImage( image );
 	} else {
-		var image = MSImageData.alloc().initWithImage_convertColorSpace_( texturePath, false );
-		shape.style().fills().firstObject().setImage( image );
+		var imageData = MSImageData.new().initWithImage_convertColorSpace_( image, false );
+		shapeFill.setImage( imageData );
 	}
 
-	var contextSettings = textureFill.contextSettings();
+	var contextSettings = shapeFill.contextSettings();
 	contextSettings.opacity = attrs.fill.textureBlend / 100;
 	contextSettings.blendMode = json2Layer.blendMode['screen'];
 }
 
 function addPatternFill( shape, attrs ) {
 	// log( '     -> addPatternFill' );
-	var splitPath = attrs.split( escape( json2Layer.resPath.basePath ));
-	var filePath = json2Layer.resPath.basePath + splitPath[1];
-	var patternPath = NSImage.new().initWithContentsOfFile( filePath );
+	var splitPath = attrs.split( json2Layer.resPath.exportedDir );
+	var filePath = json2Layer.resPath.basePath + '/' + json2Layer.resPath.exportedDir + splitPath[1];
+	var image = NSImage.new().initWithContentsOfFile( filePath );
 	var shapeStyle = shape.style();
 	var shapeFill = shapeStyle.fill();
 	
@@ -1040,12 +1040,12 @@ function addPatternFill( shape, attrs ) {
 
 	if ( 5 > json2Layer.appVer.minor ) {
 		var fillCollection = shapeFill.documentData().images();
-		shapeFill.setPatternImage_collection_( patternPath, fillCollection );
+		shapeFill.setPatternImage_collection_( image, fillCollection );
 	} else if ( 8 > json2Layer.appVer.minor ) {
-		shape.style().fills().firstObject().setPatternImage( patternPath );
+		shapeFill.setPatternImage( image );
 	} else {
-		var image = MSImageData.alloc().initWithImage_convertColorSpace_( patternPath, false );
-		shape.style().fills().firstObject().setImage( image );
+		var imageData = MSImageData.new().initWithImage_convertColorSpace_( image, false );
+		shapeFill.setImage( imageData );
 	}
 }
 
