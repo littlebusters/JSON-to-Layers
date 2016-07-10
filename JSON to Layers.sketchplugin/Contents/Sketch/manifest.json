@@ -9,7 +9,7 @@
 		"title" : "JSON to Layers"
 	},
 	"identifier": "net.creative-tweet.json-to-layers",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description" : "Generate Layers from JSON.",
 	"name" : "JSON to Layers",
 	"commands" : [
