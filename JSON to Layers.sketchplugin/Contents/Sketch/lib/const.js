@@ -1,6 +1,6 @@
 var json2Layer = json2Layer || {};
 
-json2Layer.scriptVersion = '1.0.3';
+json2Layer.scriptVersion = '1.0.4';
 
 json2Layer.blendMode = [];
 json2Layer.blendMode['normal'] = 0;
