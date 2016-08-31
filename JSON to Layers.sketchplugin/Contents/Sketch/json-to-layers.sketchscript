@@ -86,20 +86,15 @@ json2Layer.symbolMaster = ( function () {
 
 	return {
 		init: function( doc, fwJSON ) {
-			if ( 7 <= json2Layer.appVer.minor ) {
-				// log( '-> Create Symbol Master' );
-				var masterPage = doc.addBlankPage();
-				doc.pages().objectAtIndex( doc.pages().count() - 1 ).setName( 'Symbols' );
-				json2Layer.symbols = {};
-				for ( var symbolID in fwJSON.symbols ) {
-					json2Layer.symbolMaster.create( masterPage, fwJSON.symbols[symbolID], symbolID );
-				}
-				doc.setCurrentPage( doc.pages().objectAtIndex(0) );
-				// log( '-> // Create Symbol Master' );
-			} else {
-				json2Layer.symbols = [];
+			// log( '-> Create Symbol Master' );
+			var masterPage = doc.addBlankPage();
+			doc.pages().objectAtIndex( doc.pages().count() - 1 ).setName( 'Symbols' );
+			json2Layer.symbols = {};
+			for ( var symbolID in fwJSON.symbols ) {
+				json2Layer.symbolMaster.create( masterPage, fwJSON.symbols[symbolID], symbolID );
 			}
-
+			doc.setCurrentPage( doc.pages().objectAtIndex(0) );
+			// log( '-> // Create Symbol Master' );
 		},
 		create: function( parent, symbol, symbolID ) {
 			if ( !json2Layer.symbols[symbolID] ) {
@@ -143,11 +138,7 @@ function createElements( parent, elems, isMask ) {
 					// log( '     Type: Layer' );
 					shape = createGroup( parent, elems[i], true );
 					createElements( shape, elems[i].elems );
-					if ( 5 > json2Layer.appVer.minor ) {
-						shape.resizeRoot( false );
-					} else {
-						shape.resizeToFitChildrenWithOption( false );
-					}
+					shape.resizeToFitChildrenWithOption( false );
 				}
 				break;
 
@@ -193,50 +184,25 @@ function createElements( parent, elems, isMask ) {
 				var shape = createGroup( actualParent, elems[i], isMask );
 				addContextSettings( shape, elems[i] );
 				createElements( shape, elems[i].elements );
-
-				if ( 5 > json2Layer.appVer.minor ) {
-					shape.resizeRoot( false );
-				} else {
-					shape.resizeToFitChildrenWithOption( false );
-				}
+				shape.resizeToFitChildrenWithOption( false );
 				break;
 
 			case 'symbol':
 				// log( '     Type: Layer Group - Symbol' );
-				if ( 7 <= json2Layer.appVer.minor ) {
-					if ( json2Layer.symbols[elems[i].elements] ) {
-						var shape = json2Layer.symbols[elems[i].elements].newSymbolInstance();
-						actualParent.addLayers( [shape] );
-					} else {
-						while ( 'MSPage' != actualParent.class() ) {
-							actualParent = actualParent.parentObject();
-						}
-						json2Layer.symbolMaster.create( actualParent, json2Layer.orgSymbols[elems[i].elements], elems[i].elements );
-						var shape = json2Layer.symbols[elems[i].elements].newSymbolInstance();
-						parent.addLayers( [shape] );
-					}
-					setLayerName( shape, elems[i].name, elems[i].type );
-					shape.frame().setX( elems[i].left );
-					shape.frame().setY( elems[i].top );
+				if ( json2Layer.symbols[elems[i].elements] ) {
+					var shape = json2Layer.symbols[elems[i].elements].newSymbolInstance();
+					actualParent.addLayers( [shape] );
 				} else {
-					var registeredSymbol = false;
-					var slc = 0;
-					for ( slc = json2Layer.symbols.length - 1; slc >= 0; slc-- ) {
-						if ( json2Layer.symbols[slc].fwSymbolID == elems[i].symbolID
-						     && json2Layer.symbols[slc].width   == elems[i].width
-						     && json2Layer.symbols[slc].height  == elems[i].height
-						) {
-							registeredSymbol = true;
-							break;
-						}
+					while ( 'MSPage' != actualParent.class() ) {
+						actualParent = actualParent.parentObject();
 					}
-					if ( registeredSymbol ) {
-						var shape = addSymbol( actualParent, elems[i], slc );
-					} else {
-						var shape = createSymbol( actualParent, elems[i] );
-					}
-					break;
+					json2Layer.symbolMaster.create( actualParent, json2Layer.orgSymbols[elems[i].elements], elems[i].elements );
+					var shape = json2Layer.symbols[elems[i].elements].newSymbolInstance();
+					parent.addLayers( [shape] );
 				}
+				setLayerName( shape, elems[i].name, elems[i].type );
+				shape.frame().setX( elems[i].left );
+				shape.frame().setY( elems[i].top );
 		}
 
 		if ( null != elems[i].effectList ) {
@@ -244,11 +210,7 @@ function createElements( parent, elems, isMask ) {
 		}
 
 		if ( hasMask ) {
-			if ( 5 > json2Layer.appVer.minor ) {
-				actualParent.resizeRoot( false );
-			} else {
-				actualParent.resizeToFitChildrenWithOption( false );
-			}
+			actualParent.resizeToFitChildrenWithOption( false );
 		}
 
 		shape.isLocked = elems[i].locked;
@@ -257,11 +219,7 @@ function createElements( parent, elems, isMask ) {
 
 	if ( !isMask ) {
 		// log( '!!! Finished createElements!!! resizeRoot() at ' + parent.name());
-		if ( 5 > json2Layer.appVer.minor ) {
-			parent.resizeRoot( false );
-		} else {
-			parent.resizeToFitChildrenWithOption( false );
-		}
+		parent.resizeToFitChildrenWithOption( false );
 	}
 
 	return shape;
@@ -277,11 +235,12 @@ function addContextSettings( shape, attrs ) {
 
 function setFrame( targetLayer, attrs, parent ) {
 	// log( '     -> setFrame()' );
+	log( targetLayer );
 	var offsetX = parent ? parent.frame().x() : 0;
 	var offsetY = parent ? parent.frame().y() : 0;
 	if ( targetLayer.parentObject()
-		&& targetLayer.parentObject().count()
-		&& targetLayer.parentObject().firstObject().hasClippingMask() ) {
+		// && targetLayer.parentObject().count()
+		&& targetLayer.parentObject().firstLayer().hasClippingMask() ) {
 		offsetX = targetLayer.parentObject().parentObject().frame().x();
 		offsetY = targetLayer.parentObject().parentObject().frame().y();
 		targetLayer.frame().x = attrs.left - offsetX;
@@ -308,28 +267,7 @@ function setLayerName( targetLayer, name, type ) {
 }
 
 function addStylePart( shape, type ) {
-
-	if ( 8 <= json2Layer.appVer.minor ) {
-		var stylePart = shape.style().addStylePartOfType( type );
-	} else {
-		switch( type ) {
-			case 0:
-				var stylePart = shape.style().fills().addNewStylePart();
-				break;
-			case 1:
-				var stylePart = shape.style().borders().addNewStylePart();
-				break;
-			case 2:
-				var stylePart = shape.style().shadows().addNewStylePart();
-				break;
-			case 3:
-				var stylePart = shape.style().innerShadows().addNewStylePart();
-		}
-		
-	}
-	
-
-	return stylePart;
+	return shape.style().addStylePartOfType( type );
 }
 
 function addPathAttributes( shape, attrs, maskMode ) {
@@ -699,7 +637,11 @@ function importBitmap( parent, attrs, isMask ) {
 	var splitPath = filePath.split( escape( json2Layer.resPath.exportedDir ) );
 	filePath = json2Layer.resPath.basePath + '/' + json2Layer.resPath.exportedDir + splitPath[1];
 
-	var bitmap = MSBitmapLayer.bitmapLayerWithImageFromPath( filePath.toString() );
+	var imageData = NSImage.new().initWithContentsOfFile( filePath );
+	var bitmap = MSBitmapLayer.new();
+	bitmap.image = imageData;
+	// log( filePath.toString() )
+	// log( bitmap );
 	bitmap = setFrame( bitmap, attrs, ( isMask ? parent : false ) );
 	bitmap.name = unescape( attrs.name );
 
@@ -934,11 +876,7 @@ function createSymbol( parent, attrs ) {
 	setLayerName( shape, attrs.symbolName, 'symbol' );
 	addContextSettings( shape, attrs );
 	createElements( shape, json2Layer.orgSymbols[attrs.elements].elements );
-	if ( 5 > json2Layer.appVer.minor ) {
-		shape.resizeRoot( false );
-	} else {
-		shape.resizeToFitChildrenWithOption( false );
-	}
+	shape.resizeToFitChildrenWithOption( false );
 
 	var symbols = json2Layer.doc.documentData().layerSymbols();
 	symbols.addSymbolWithName_firstInstance( attrs.symbolName, shape );
@@ -1007,15 +945,8 @@ function addTextureFill( shape, attrs ) {
 	shapeFill.setFillType( 4 );
 	shapeFill.setPatternFillType( 0 );
 
-	if ( 5 > json2Layer.appVer.minor ) {
-		var fillCollection = shapeFill.documentData().images();
-		shapeFill.setPatternImage_collection_( image, fillCollection );
-	} else if ( 8 > json2Layer.appVer.minor ) {
-		shapeFill.setPatternImage( image );
-	} else {
-		var imageData = MSImageData.new().initWithImage_convertColorSpace_( image, false );
-		shapeFill.setImage( imageData );
-	}
+	var imageData = MSImageData.new().initWithImage_convertColorSpace_( image, false );
+	shapeFill.setImage( imageData );
 
 	var contextSettings = shapeFill.contextSettings();
 	contextSettings.opacity = attrs.fill.textureBlend / 100;
@@ -1033,15 +964,8 @@ function addPatternFill( shape, attrs ) {
 	shapeFill.setFillType( 4 );
 	shapeFill.setPatternFillType( 1 );
 
-	if ( 5 > json2Layer.appVer.minor ) {
-		var fillCollection = shapeFill.documentData().images();
-		shapeFill.setPatternImage_collection_( image, fillCollection );
-	} else if ( 8 > json2Layer.appVer.minor ) {
-		shapeFill.setPatternImage( image );
-	} else {
-		var imageData = MSImageData.new().initWithImage_convertColorSpace_( image, false );
-		shapeFill.setImage( imageData );
-	}
+	var imageData = MSImageData.new().initWithImage_convertColorSpace_( image, false );
+	shapeFill.setImage( imageData );
 }
 
 function addGradientFill( shape, pathAttrs ) {

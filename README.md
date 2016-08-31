@@ -2,9 +2,11 @@
 
 ![JSON to Layers HERO](http://creative-tweet.net/img/github/json-to-layers-hero.png)
 
-You can import from Fireworks PNG (as JSON) to the Sketch 3. ([README in Japanese](https://github.com/littlebusters/JSON-to-Layers/blob/master/README.ja.md))
+You can import from Fireworks PNG (as JSON) to the Sketch. ([README in Japanese](https://github.com/littlebusters/JSON-to-Layers/blob/master/README.ja.md))
 
 TL;DR: [Fireworks to Sketch 3 — QuickCast.](http://quick.as/pk7yuzz8b)
+
+**Please download [the plugin of the previous version](https://github.com/littlebusters/JSON-to-Layers/tree/b2795a51d1a1d687ddc7c7dd32302ee449c2b009) when you are using a Sketch 3.8.**
 
 ## Installation
 
@@ -14,11 +16,11 @@ And need install "[Fw to JSON](https://github.com/littlebusters/Fw-to-JSON)" com
 
 ## Usage
 
-1. Create new document and run the plugin in Sketch 3.
+1. Create new document and run the plugin in Sketch.
 1. Select the exported JSON file in the [Fw to JSON](https://github.com/littlebusters/Fw-to-JSON).
 1. To complete the import wait a little.
 
-## Import JSON on Sketch 3.
+## Import JSON on Sketch.
 
 ### Pages & States
 
@@ -26,7 +28,7 @@ Pages and States convert as Artboards. Pages are arranged horizontally to the ca
 
 ### Rectangle
 
-If not transformed create Rectangle Layer in Sketch 3. Otherwise, create layer by Path.
+If not transformed create Rectangle Layer in Sketch. Otherwise, create layer by Path.
 
 ### Layer and Sub-Layer
 
@@ -54,11 +56,11 @@ Stroke setting to be converted is as follows.
 - dash setting
 - shape (circle or square)
 
-3-th of each gap and line setting are discared in Sketch 3.
+3-th of each gap and line setting are discared in Sketch.
 
 ### Blending
 
-These blend mode is not supported in the Sketch 3. Convert as "Normal".
+These blend mode is not supported in the Sketch. Convert as "Normal".
 
 - average
 - dissolve
@@ -128,7 +130,7 @@ Convert as Group.
 
 ### Texture and Bitmap
 
-Export as Fireworks PNG and apply patterned Fill in Sketch 3.
+Export as Fireworks PNG and apply patterned Fill in Sketch.
 
 ## Bug reports
 
