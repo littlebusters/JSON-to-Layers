@@ -2,9 +2,11 @@
 
 ![JSON to Layers HERO](http://creative-tweet.net/img/github/json-to-layers-hero.png)
 
-Fireworks PNGの構造をJSONファイルとして書き出し、Sketch 3へインポートする機能拡張およびプラグインです。
+Fireworks PNGの構造をJSONファイルとして書き出し、Sketchへインポートする機能拡張およびプラグインです。
 
-動画: [Fireworks to Sketch 3 — QuickCast.](http://quick.as/pk7yuzz8b)
+動画: [Fireworks to Sketch — QuickCast.](http://quick.as/pk7yuzz8b)
+
+**Sketch 3.8をお使いの場合は、[以前のバージョンのプラグイン](https://github.com/littlebusters/JSON-to-Layers/tree/b2795a51d1a1d687ddc7c7dd32302ee449c2b009)をダウンロードしてください。**
 
 ## インストール
 
@@ -14,7 +16,7 @@ Fireworks PNGの構造をJSONファイルとして書き出し、Sketch 3へイ�
 
 ## 使い方
 
-1. Sketch 3で新規ドキュメントを作成します。
+1. Sketchで新規ドキュメントを作成します。
 1. プラグインを実行すると、JSONファイルを選択するようにダイアログが表示されるので、Fw to JSONコマンドで書き出したJSONファイルを選択します。
 1. 変換が始まります。JSONファイルが大きいと、時間がかかり固まったように見えるため、少し待ってみてください。
 
@@ -28,7 +30,7 @@ Fireworks PNGの構造をJSONファイルとして書き出し、Sketch 3へイ�
 
 ### 長方形
 
-長方形ツールで作成したオブジェクトを変形していない場合、Sketch 3でもRectangleレイヤーとして作成します。変形している場合は、ベジェのオブジェクトとして作成します。
+長方形ツールで作成したオブジェクトを変形していない場合、SketchでもRectangleレイヤーとして作成します。変形している場合は、ベジェのオブジェクトとして作成します。
 
 ### 長方形以外のシェイプ
 
@@ -36,7 +38,7 @@ Fireworks PNGの構造をJSONファイルとして書き出し、Sketch 3へイ�
 
 ### レイヤーおよびサブレイヤー
 
-レイヤーおよびサブレイヤーは、Sketch 3のグループとして作成します。レイヤーが元になったグループでは、"Click-through when selecting"を有効化します。
+レイヤーおよびサブレイヤーは、Sketchのグループとして作成します。レイヤーが元になったグループでは、"Click-through when selecting"を有効化します。
 
 ### 「エッジをぼかす」（塗り・線）
 
@@ -44,11 +46,11 @@ Fireworksの「エッジをぼかす」は変換されません。
 
 ### グラデーション
 
-直線はLinear Gradientとして、円形・楕円はRadial Gradientとして、円錐はAngular Gradientに変換します。ただし、Sketch 3上でAngular Gradientの中心を変更できないため、円錐に関しては完全に変換できていません。また、それ以外は直線に変換します。
+直線はLinear Gradientとして、円形・楕円はRadial Gradientとして、円錐はAngular Gradientに変換します。ただし、Sketch上でAngular Gradientの中心を変更できないため、円錐に関しては完全に変換できていません。また、それ以外は直線に変換します。
 
 ### パターン
 
-パターンを適用した状態の形状をビットマップとして書き出し、Sketch 3のPattern Fillとして適用します。元のパターンファイルは書き出ししないため、必要に応じて個別に書き出してください。
+パターンを適用した状態の形状をビットマップとして書き出し、SketchのPattern Fillとして適用します。元のパターンファイルは書き出ししないため、必要に応じて個別に書き出してください。
 
 ### Stroke
 
@@ -62,11 +64,11 @@ Fireworksの「エッジをぼかす」は変換されません。
 
 つまり線は「基本→エッジが堅い線（角）」または「基本→エッジが堅い線（丸）」以外は変換できません。「基本→エッジが堅い線（角）」相当でBorderを適用します。
 
-Fireworksでは破線の設定を線分と間隔の組み合わせを3つまで設定できますが、Sketch 3では2つまでしか設定できないため、3つめの設定は破棄します。
+Fireworksでは破線の設定を線分と間隔の組み合わせを3つまで設定できますが、Sketchでは2つまでしか設定できないため、3つめの設定は破棄します。
 
 ### ブレンドモード
 
-Sketch 3で適用できるブレンドモードのみ変換します。Sketch 3にない場合は、Normalを適用します。
+Sketchで適用できるブレンドモードのみ変換します。Sketchにない場合は、Normalを適用します。
 
 ### フィルター
 
@@ -99,7 +101,7 @@ Sketch 3で適用できるブレンドモードのみ変換します。Sketch 3�
 
 シンボルはSymbolとして変換します。
 
-シンボルインスタンスをFireworks上で変形している場合、異なるSymbolとして作成します。これはSketch 3のSymbolが、インスタンスの変形に対応していないためです。
+シンボルインスタンスをFireworks上で変形している場合、異なるSymbolとして作成します。これはSketchのSymbolが、インスタンスの変形に対応していないためです。
 
 ### オートシェイプ
 
@@ -107,7 +109,7 @@ Sketch 3で適用できるブレンドモードのみ変換します。Sketch 3�
 
 ### テクスチャー
 
-内蔵テクスチャーは、ビットマップとして書き出しを行い、Sketch 3のPattern Fillとして適用します。
+内蔵テクスチャーは、ビットマップとして書き出しを行い、SketchのPattern Fillとして適用します。
 
 ユーザが独自に適用しているテクスチャーは、元にあった場所にファイルが存在すれば、書き出しを行い内蔵テクスチャーと同様に処理を行います。テクスチャーファイルが存在しなかった場合は、レイヤー名に「 [texture not found]」と追加します。
 

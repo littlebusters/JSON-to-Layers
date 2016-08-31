@@ -1,6 +1,6 @@
 var json2Layer = json2Layer || {};
 
-json2Layer.scriptVersion = '1.0.4';
+json2Layer.scriptVersion = '2.0.0';
 
 json2Layer.blendMode = [];
 json2Layer.blendMode['normal'] = 0;
@@ -29,7 +29,7 @@ json2Layer.PsLE = ['satin', 'dropShadow', 'innerShadow', 'outerGlow', 'innerGlow
 json2Layer.appVer = {};
 json2Layer.appVer.full = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 json2Layer.appVer.major    = ( json2Layer.appVer.full.split( '.' ) )[0];
-json2Layer.appVer.minor    = ( json2Layer.appVer.full.split( '.' ) )[1];
+json2Layer.appVer.minor    = ( json2Layer.appVer.full.split( '.' ) )[1] || 0;
 json2Layer.appVer.revision = ( json2Layer.appVer.full.split( '.' ) )[2] || 0;
 
 json2Layer.symbols = [];
