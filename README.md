@@ -132,6 +132,10 @@ Convert as Group.
 
 Export as Fireworks PNG and apply patterned Fill in Sketch.
 
+### Bitmap Mask
+
+Sketch can't use bitmap as a mask. Instead, use a rectangle of same bounding. Import a bitmap manually, if necessary.
+
 ## Bug reports
 
 1. Open Console.app from `/Applications/Utilities/`.
