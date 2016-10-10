@@ -151,9 +151,15 @@ function createElements( parent, elems, isMask ) {
 
 			case 'bitmap':
 				// log( '     Type: Bitmap' );
-				var shape = importBitmap( actualParent, elems[i], isMask );
-				addContextSettings( shape, elems[i] );
-				break;
+				if ( !isMask ) {
+					var shape = importBitmap( actualParent, elems[i], isMask );
+					addContextSettings( shape, elems[i] );
+					break;
+				} else {
+					var shape = createMaskRectangle( actualParent, elems[i], isMask );
+					addContextSettings( shape, elems[i] );
+					break;
+				}
 
 			case 'rectangle':
 				// log( '     Type: Rectangle' );
@@ -235,7 +241,7 @@ function addContextSettings( shape, attrs ) {
 
 function setFrame( targetLayer, attrs, parent ) {
 	// log( '     -> setFrame()' );
-	log( targetLayer );
+	// log( targetLayer );
 	var offsetX = parent ? parent.frame().x() : 0;
 	var offsetY = parent ? parent.frame().y() : 0;
 	if ( targetLayer.parentObject()
@@ -635,9 +641,10 @@ function addEffects( shape, attrs ) {
 function importBitmap( parent, attrs, isMask ) {
 	var filePath = escape( attrs.uri );
 	var splitPath = filePath.split( escape( json2Layer.resPath.exportedDir ) );
-	filePath = json2Layer.resPath.basePath + '/' + json2Layer.resPath.exportedDir + splitPath[1];
+	filePath = unescape( json2Layer.resPath.basePath + '/' + json2Layer.resPath.exportedDir + splitPath[1] );
 
-	var imageData = NSImage.new().initWithContentsOfFile( filePath );
+	var image = NSImage.new().initWithContentsOfFile( filePath );
+	var imageData = MSImageData.alloc().initWithImage_convertColorSpace_(image, true);
 	var bitmap = MSBitmapLayer.new();
 	bitmap.image = imageData;
 	// log( filePath.toString() )
@@ -666,6 +673,19 @@ function createMask( parent, attrs ) {
 	}
 
 	return maskGroup;
+}
+
+function createMaskRectangle( parent, attrs ) {
+	// Bitmap of alternative because can't mask at a bitmap layer. 
+	var rectangle = MSRectangleShape.new();
+	rectangle.frame().width = attrs.width;
+	rectangle.frame().height = attrs.height;
+	var shape = MSShapeGroup.shapeWithPath( rectangle );
+	shape.frame().x = attrs.left - parent.frame().x();
+	shape.frame().y = attrs.top  - parent.frame().y();
+	parent.addLayers( [shape] );
+
+	return shape;
 }
 
 function createGroup( parent, attrs, _isLayer ) {
