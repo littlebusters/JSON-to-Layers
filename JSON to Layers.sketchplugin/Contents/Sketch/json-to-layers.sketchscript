@@ -287,7 +287,7 @@ function addPathAttributes( shape, attrs, maskMode ) {
 		} else if ( 'pattern' == attrs.fillType ) {
 			addPatternFill( shape, attrs.fill.pattern.patternURI );
 		} else {
-			var color = MSColor.colorWithSVGString( getHexColor( attrs.fillColor ) );
+			var color = MSImmutableColor.colorWithSVGString( getHexColor( attrs.fillColor ) );
 			color.alpha = getOpacity( attrs.fillColor );
 			fill.color = color;
 		}
@@ -310,7 +310,7 @@ function addPathAttributes( shape, attrs, maskMode ) {
 
 function addBorder( shape, attrs ) {
 	var border = addStylePart( shape, 1 );
-	var color = MSColor.colorWithSVGString( getHexColor( attrs.brushColor ) );
+	var color = MSImmutableColor.colorWithSVGString( getHexColor( attrs.brushColor ) );
 	color.alpha = getOpacity( attrs.brushColor );
 	border.setColor( color );
 	border.thickness = attrs.brush.diameter;
@@ -371,7 +371,7 @@ function addEffects( shape, attrs ) {
 					effect.offsetY = coord.y;
 					effect.spread = 0;
 
-					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
+					var color = MSImmutableColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
 					color.alpha = getOpacity( attrs[i].ShadowColor );
 					effect.color = color;
 					break;
@@ -384,7 +384,7 @@ function addEffects( shape, attrs ) {
 					effect.offsetY = coord.y;
 					effect.spread = 0;
 
-					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
+					var color = MSImmutableColor.colorWithSVGString( getHexColor( attrs[i].ShadowColor ) );
 					color.alpha = getOpacity( attrs[i].ShadowColor );
 					effect.color = color;
 					break;
@@ -398,7 +398,7 @@ function addEffects( shape, attrs ) {
 							effect.offsetY = 0;
 							effect.spread = attrs[i].GlowWidth;
 
-							var color = MSColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
+							var color = MSImmutableColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
 							color.alpha = attrs[i].BevelContrast / 100;
 							effect.color = color;
 							break;
@@ -412,12 +412,12 @@ function addEffects( shape, attrs ) {
 					effect.offsetY = 0;
 					effect.spread = attrs[i].GlowWidth;
 
-					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
+					var color = MSImmutableColor.colorWithSVGString( getHexColor( attrs[i].OuterBevelColor ) );
 					color.alpha = attrs[i].BevelContrast / 100;
 					effect.color = color;
 					break;
 				case 'solid shadow':
-					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].color ) );
+					var color = MSImmutableColor.colorWithSVGString( getHexColor( attrs[i].color ) );
 					color.alpha = 1;
 
 					for ( var j = attrs[i].distance - 1; j >= 0; j-- ) {
@@ -465,7 +465,7 @@ function addEffects( shape, attrs ) {
 				case 'color fill':
 					var effect = addStylePart( shape, 0 );
 					effect.setFillType(0);
-					var color = MSColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
+					var color = MSImmutableColor.colorWithSVGString( getHexColor( attrs[i].Color ) );
 					color.alpha = attrs[i].Opacity / 100;
 					effect.contextSettings().blendMode = json2Layer.solidFill[attrs[i].Blendmode];
 					effect.color = color;
@@ -492,7 +492,7 @@ function addEffects( shape, attrs ) {
 									effect.spread = psleAttrs[7];
 
 									var originColor = psleAttrs[11].split( ';' );
-									var color = MSColor.colorWithRGBADictionary( {
+									var color = MSImmutableColor.colorWithRGBADictionary( {
 										r: bit2Percent( originColor[1] ), 
 										g: bit2Percent( originColor[2] ), 
 										b: bit2Percent( originColor[3] )
@@ -510,7 +510,7 @@ function addEffects( shape, attrs ) {
 									effect.spread = psleAttrs[7];
 
 									var originColor = psleAttrs[11].split( ';' );
-									var color = MSColor.colorWithRGBADictionary( {
+									var color = MSImmutableColor.colorWithRGBADictionary( {
 										r: bit2Percent( originColor[1] ), 
 										g: bit2Percent( originColor[2] ), 
 										b: bit2Percent( originColor[3] )
@@ -528,7 +528,7 @@ function addEffects( shape, attrs ) {
 									effect.spread = subAttrs[1];
 
 									var originColor = psleAttrs[5].split( ';' );
-									var color = MSColor.colorWithRGBADictionary( {
+									var color = MSImmutableColor.colorWithRGBADictionary( {
 										r: bit2Percent( originColor[1] ), 
 										g: bit2Percent( originColor[2] ), 
 										b: bit2Percent( originColor[3] )
@@ -549,7 +549,7 @@ function addEffects( shape, attrs ) {
 									effect.spread = subAttrs[1];
 
 									var originColor = psleAttrs[5].split( ';' );
-									var color = MSColor.colorWithRGBADictionary( {
+									var color = MSImmutableColor.colorWithRGBADictionary( {
 										r: bit2Percent( originColor[1] ), 
 										g: bit2Percent( originColor[2] ), 
 										b: bit2Percent( originColor[3] )
@@ -564,7 +564,7 @@ function addEffects( shape, attrs ) {
 									var effect = addStylePart( shape, 0 );
 									effect.setFillType(0);
 									var originColor = psleAttrs[3].split( ';' );
-									var color = MSColor.colorWithRGBADictionary( {
+									var color = MSImmutableColor.colorWithRGBADictionary( {
 										r: bit2Percent( originColor[1] ), 
 										g: bit2Percent( originColor[2] ), 
 										b: bit2Percent( originColor[3] )
@@ -605,7 +605,7 @@ function addEffects( shape, attrs ) {
 								case 'stroke':
 									var effect = addStylePart( shape, 1 );
 									var originColor = psleAttrs[4].split( ';' );
-									var color = MSColor.colorWithRGBADictionary( {
+									var color = MSImmutableColor.colorWithRGBADictionary( {
 										r: bit2Percent( originColor[1] ), 
 										g: bit2Percent( originColor[2] ), 
 										b: bit2Percent( originColor[3] )
@@ -734,7 +734,7 @@ function createText( parent, attrs, isMask ) {
 	} else {
 		text.fontSize           = attrs.fontSize;
 		text.fontPostscriptName = attrs.fontFace;
-		text.textColor          = MSColor.colorWithSVGString( attrs.fillColor );
+		text.textColor          = MSImmutableColor.colorWithSVGString( attrs.fillColor );
 
 		var pragraph = NSMutableParagraphStyle.new()
 		pragraph.minimumLineHeight = attrs.leading;
@@ -1104,7 +1104,7 @@ function addGradientFill( shape, pathAttrs ) {
 		}
 	}
 	for ( var i = 0; i < orignPoint; i++ ) {
-		var gradientColor = MSColor.colorWithSVGString( optimazedPoints[i].color );
+		var gradientColor = MSImmutableColor.colorWithSVGString( optimazedPoints[i].color );
 		gradientColor.alpha = optimazedPoints[i].opacity;
 		gradient.setColor_atIndex_( gradientColor, i );
 	}
@@ -1158,14 +1158,14 @@ function convertFilltoAlpha( shape, fillType ) {
 		case 'gradient':
 			var gradient = shape.style().fills().firstObject().gradient();
 			for ( var i = 0; i < gradient.stops().count(); i++ ) {
-				var color = MSColor.colorWithSVGString( '#' + gradient.stops().objectAtIndex(i).color().hexValue().toString() );
+				var color = MSImmutableColor.colorWithSVGString( '#' + gradient.stops().objectAtIndex(i).color().hexValue().toString() );
 				color.alpha = gradient.stops().objectAtIndex(i).color().alpha() * gray2Alpha( gradient.stops().objectAtIndex(i).color().hexValue().toString() );
 				gradient.setColor_atIndex_( color, i );
 			}
 			break;
 		case 'flat':
 			var fill = shape.style().fills().firstObject();
-			var color = MSColor.colorWithSVGString( '#' + fill.color().hexValue().toString() );
+			var color = MSImmutableColor.colorWithSVGString( '#' + fill.color().hexValue().toString() );
 			color.alpha = gray2Alpha( fill.color().hexValue().toString() );
 			fill.setFillType( 1 );
 			var gradient = fill.gradient();
