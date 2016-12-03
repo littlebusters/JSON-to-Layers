@@ -2,11 +2,13 @@
 
 ![JSON to Layers HERO](http://creative-tweet.net/img/github/json-to-layers-hero.png)
 
-You can import from Fireworks PNG (as JSON) to the Sketch. ([README in Japanese](https://github.com/littlebusters/JSON-to-Layers/blob/master/README.ja.md))
+You can import from Fireworks PNG (as JSON) to the Sketch (for ver.41). ([README in Japanese](https://github.com/littlebusters/JSON-to-Layers/blob/master/README.ja.md))
 
 TL;DR: [Fireworks to Sketch 3 — QuickCast.](http://quick.as/pk7yuzz8b)
 
-**Please download [the plugin of the previous version](https://github.com/littlebusters/JSON-to-Layers/tree/b2795a51d1a1d687ddc7c7dd32302ee449c2b009) when you are using a Sketch 3.8.**
+**Old Versions**
+- [Sketch 3.8](https://github.com/littlebusters/JSON-to-Layers/archive/forSketch3.8.zip)
+- [Sketch 39-40](https://github.com/littlebusters/JSON-to-Layers/archive/forSketch39.zip)
 
 ## Installation
 

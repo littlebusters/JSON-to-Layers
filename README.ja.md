@@ -2,11 +2,13 @@
 
 ![JSON to Layers HERO](http://creative-tweet.net/img/github/json-to-layers-hero.png)
 
-Fireworks PNGの構造をJSONファイルとして書き出し、Sketchへインポートする機能拡張およびプラグインです。
+Fireworks PNGの構造をJSONファイルとして書き出し、Sketch（ver.41）へインポートする機能拡張およびプラグインです。
 
 動画: [Fireworks to Sketch — QuickCast.](http://quick.as/pk7yuzz8b)
 
-**Sketch 3.8をお使いの場合は、[以前のバージョンのプラグイン](https://github.com/littlebusters/JSON-to-Layers/tree/b2795a51d1a1d687ddc7c7dd32302ee449c2b009)をダウンロードしてください。**
+**古いバージョンをお使い方**
+- [Sketch 3.8](https://github.com/littlebusters/JSON-to-Layers/archive/forSketch3.8.zip)
+- [Sketch 39-40](https://github.com/littlebusters/JSON-to-Layers/archive/forSketch39.zip)
 
 ## インストール
 
