@@ -45,7 +45,8 @@ function loadJSON() {
 		var fwJSON = JSON.parse( NSString.stringWithContentsOfFile( filePath ) ); 
 		// log( 'Open File from: ' + filePath );
 		json2Layer.orgSymbols = fwJSON.symbols;
-		json2Layer.resPath.basePath    = openPanel.directoryURL().path();
+		var filename = filePath.split( '/' ).pop();
+		json2Layer.resPath.basePath    = filePath.split(filename)[0];
 		json2Layer.resPath.exportedDir = fwJSON.resExportedDir;
 	} else {
 		var fwJSON = false;
