@@ -114,7 +114,7 @@ json2Layer.symbolMaster = ( function () {
 					artboard.layers().objectAtIndex( i ).frame().x = artboard.layers().objectAtIndex( i ).frame().x() - symbol.left;
 					artboard.layers().objectAtIndex( i ).frame().y = artboard.layers().objectAtIndex( i ).frame().y() - symbol.top;
 				}
-				json2Layer.symbols[symbolID] = artboard.convertToSymbol();
+				json2Layer.symbols[symbolID] = MSSymbolMaster.convertArtboardToSymbol( artboard );
 				// log( '   // Created symbol master: ' + symbol.symbolName );
 			}
 		}
@@ -885,47 +885,6 @@ function addBezier( parent, attrs, isMask ) {
 		}
 	}
 	var shape = MSShapeGroup.shapeWithBezierPath( bezierLine );
-
-	return shape;
-}
-
-function createSymbol( parent, attrs ) {
-	// log( '           Create Symbol' );
-
-	var shape = createGroup( parent, attrs );
-	setLayerName( shape, attrs.symbolName, 'symbol' );
-	addContextSettings( shape, attrs );
-	createElements( shape, json2Layer.orgSymbols[attrs.elements].elements );
-	shape.resizeToFitChildrenWithOption( false );
-
-	var symbols = json2Layer.doc.documentData().layerSymbols();
-	symbols.addSymbolWithName_firstInstance( attrs.symbolName, shape );
-
-	var shape = parent.layers().objectAtIndex( parent.layers().count() - 1 );
-	shape.frame().x = attrs.left;
-	shape.frame().y = attrs.top;
-
-	json2Layer.symbols.push( 
-		{ 
-			fwSymbolID: attrs.symbolID,
-			width: attrs.width, 
-			height: attrs.height,
-			symbolID: shape.sharedObjectID()
-		}
-	);
-
-	return shape;
-}
-
-function addSymbol( parent, attrs, symbolIndex ) {
-	// log( '           Exist Symbol' );
-	var symbol = json2Layer.doc.documentData().layerSymbols().symbolAtIndex( symbolIndex );
-	var shape = symbol.newInstance();
-	shape.setName( unescape( attrs.name ));
-	shape.frame().x = attrs.left;
-	shape.frame().y = attrs.top;
-	parent.addLayers( [shape] );
-	// doc.reloadInspector();
 
 	return shape;
 }
