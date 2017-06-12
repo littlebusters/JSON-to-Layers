@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"  xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>JSON to Layers</title>
+    <link>https://raw.githubusercontent.com/littlebusters/JSON-to-Layers/master/JSON%20to%20Layers.sketchplugin/Contents/Resources/update.xml</link>
+    <description>Generate Layers from JSON.</description>
+    <language>en</language>
+      <item>
+        <title>Version 3.1.0</title>
+        <description>
+          <![CDATA[
+            <ul>
+              <li>Supports Official Updating</li>
+            </ul>
+          ]]>
+        </description>
+        <pubDate>Mod, 12 Jun 2017 22:51:00 +0900</pubDate>
+        <enclosure url="https://github.com/littlebusters/JSON-to-Layers/archive/master.zip" sparkle:version="3.1.0" length="3348040" type="application/octet-stream" />
+      </item>
+  </channel>
+</rss>

@@ -9,10 +9,11 @@
 		"title" : "JSON to Layers"
 	},
 	"identifier": "net.creative-tweet.json-to-layers",
-	"version": "3.0.0",
+	"version": "3.1.0",
 	"compatibleVersion": 41,
 	"description" : "Generate Layers from JSON.",
 	"name" : "JSON to Layers",
+    "appcast": "https://raw.githubusercontent.com/littlebusters/JSON-to-Layers/master/JSON%20to%20Layers.sketchplugin/Contents/Resources/update.xml",
 	"commands" : [
 		{
 			"name": "JSON to Layers",
