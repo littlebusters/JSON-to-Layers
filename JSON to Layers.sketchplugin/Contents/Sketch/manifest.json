@@ -9,7 +9,7 @@
 		"title" : "JSON to Layers"
 	},
 	"identifier": "net.creative-tweet.json-to-layers",
-	"version": "3.1.0",
+	"version": "3.2.0",
 	"compatibleVersion": 41,
 	"description" : "Generate Layers from JSON.",
 	"name" : "JSON to Layers",
@@ -20,7 +20,9 @@
 			"identifier": "json-to-layers",
 			"handler" : "onRun",
 			"shortcut" : "shift control command 2",
-			"script": "json-to-layers.sketchscript"
+			"script": "json-to-layers.sketchscript",
+            "description": "Generate Layers from JSON (A Fw JSON is necessary).",
+            "icon": "icon-json-to-layers.png"
 		}
 	]
 }
